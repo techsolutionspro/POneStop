@@ -16,6 +16,7 @@ import pgdRoutes from './routes/pgd.routes';
 import patientRoutes from './routes/patient.routes';
 import auditRoutes from './routes/audit.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import securityRoutes from './routes/security.routes';
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api/pgds', pgdRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/security', securityRoutes);
 
 // ============================================================
 // ERROR HANDLING
