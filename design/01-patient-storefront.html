@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Storefront - Pharmacy One Stop Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-50: #f0fdfa; --primary-100: #ccfbf1; --primary-200: #99f6e4;
+    --primary-300: #5eead4; --primary-400: #2dd4bf; --primary-500: #14b8a6;
+    --primary-600: #0d9488; --primary-700: #0f766e; --primary-800: #115e59; --primary-900: #134e4a;
+    --gray-25: #fcfcfd; --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563;
+    --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    --success-50: #f0fdf4; --success-500: #22c55e; --success-600: #16a34a; --success-700: #15803d;
+    --warning-50: #fffbeb; --warning-500: #f59e0b; --warning-600: #d97706;
+    --error-50: #fef2f2; --error-500: #ef4444; --error-600: #dc2626;
+    --info-50: #eff6ff; --info-500: #3b82f6; --info-600: #2563eb;
+    --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-full: 9999px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1); --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+    /* White-label: These would be overridden per tenant */
+    --brand-primary: #0d9488; --brand-primary-light: #f0fdfa;
+    --brand-dark: #115e59; --brand-accent: #14b8a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; color: var(--gray-900); background: white; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Page Container */
+  .page-wrapper { max-width: 1400px; margin: 0 auto; }
+  .screen-label {
+    background: var(--gray-900); color: white; padding: 12px 24px; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .screen-label .badge { background: rgba(255,255,255,0.15); border-radius: var(--radius-full); padding: 3px 10px; font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .screen-section {
+    border: 2px solid var(--gray-200); border-radius: var(--radius-xl); margin: 32px 24px;
+    overflow: hidden; background: white;
+  }
+  .screen-title {
+    background: var(--gray-50); padding: 16px 24px; border-bottom: 1px solid var(--gray-200);
+    font-size: 14px; font-weight: 600; color: var(--gray-600); display: flex; align-items: center; gap: 8px;
+  }
+  .screen-title .num { background: var(--primary-600); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .screen-body { padding: 0; }
+
+  /* ============= STOREFRONT HEADER ============= */
+  .sf-header {
+    background: white; border-bottom: 1px solid var(--gray-200); padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between; height: 72px;
+  }
+  .sf-logo { display: flex; align-items: center; gap: 12px; }
+  .sf-logo-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--brand-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 18px; }
+  .sf-logo-text { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .sf-logo-sub { font-size: 11px; color: var(--gray-400); font-weight: 400; }
+  .sf-nav { display: flex; gap: 32px; }
+  .sf-nav a { font-size: 14px; color: var(--gray-600); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+  .sf-nav a:hover, .sf-nav a.active { color: var(--brand-primary); }
+  .sf-actions { display: flex; align-items: center; gap: 16px; }
+  .sf-btn { padding: 8px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+  .sf-btn-primary { background: var(--brand-primary); color: white; }
+  .sf-btn-primary:hover { background: var(--brand-dark); }
+  .sf-btn-outline { background: transparent; color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .sf-btn-outline:hover { background: var(--gray-50); }
+
+  /* ============= HERO ============= */
+  .sf-hero {
+    background: linear-gradient(135deg, var(--primary-800) 0%, var(--primary-700) 40%, var(--primary-600) 100%);
+    color: white; padding: 80px 64px; display: flex; align-items: center; gap: 64px;
+  }
+  .sf-hero-content { flex: 1; }
+  .sf-hero h1 { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
+  .sf-hero p { font-size: 17px; opacity: 0.85; line-height: 1.7; max-width: 500px; margin-bottom: 32px; }
+  .sf-hero-ctas { display: flex; gap: 12px; }
+  .sf-hero-ctas .sf-btn { padding: 14px 28px; font-size: 15px; border-radius: var(--radius-md); }
+  .sf-hero-ctas .sf-btn-white { background: white; color: var(--primary-800); font-weight: 600; }
+  .sf-hero-ctas .sf-btn-ghost { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .sf-hero-image {
+    width: 400px; height: 300px; background: rgba(255,255,255,0.1); border-radius: var(--radius-xl);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .sf-hero-image span { font-size: 14px; opacity: 0.5; }
+  .sf-trust { display: flex; gap: 24px; margin-top: 32px; }
+  .sf-trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; opacity: 0.8; }
+  .sf-trust-icon { width: 20px; height: 20px; }
+
+  /* ============= SERVICES GRID ============= */
+  .sf-section { padding: 64px; }
+  .sf-section-header { text-align: center; margin-bottom: 40px; }
+  .sf-section-header h2 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
+  .sf-section-header p { font-size: 16px; color: var(--gray-500); margin-top: 8px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .service-card {
+    border: 1px solid var(--gray-200); border-radius: var(--radius-lg); overflow: hidden;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .service-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .service-img { height: 160px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; }
+  .service-img .emoji { font-size: 48px; }
+  .service-body { padding: 20px; }
+  .service-body h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .service-body p { font-size: 13px; color: var(--gray-500); line-height: 1.5; margin-bottom: 16px; }
+  .service-meta { display: flex; align-items: center; justify-content: space-between; }
+  .service-price { font-size: 18px; font-weight: 700; color: var(--primary-700); }
+  .service-price span { font-size: 12px; font-weight: 400; color: var(--gray-400); }
+  .service-modes { display: flex; gap: 6px; }
+  .service-mode {
+    font-size: 11px; padding: 3px 8px; border-radius: var(--radius-full);
+    background: var(--primary-50); color: var(--primary-700); font-weight: 500;
+  }
+
+  /* ============= BOOKING FLOW ============= */
+  .booking-flow { max-width: 680px; margin: 0 auto; padding: 40px 24px; }
+  .bf-steps { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 40px; }
+  .bf-step { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--gray-400); }
+  .bf-step.active { color: var(--primary-700); }
+  .bf-step.done { color: var(--primary-600); }
+  .bf-step-num {
+    width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; border: 2px solid var(--gray-300); background: white;
+  }
+  .bf-step.active .bf-step-num { border-color: var(--primary-600); background: var(--primary-600); color: white; }
+  .bf-step.done .bf-step-num { border-color: var(--primary-600); background: var(--primary-600); color: white; }
+  .bf-step-line { width: 48px; height: 2px; background: var(--gray-200); margin: 0 6px; }
+  .bf-step-line.done { background: var(--primary-500); }
+
+  .bf-card {
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .bf-card-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bf-card-header h3 { font-size: 18px; font-weight: 600; }
+  .bf-card-body { padding: 24px; }
+  .bf-card-footer { padding: 16px 24px; border-top: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; }
+
+  /* Date picker mock */
+  .date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .date-header { font-size: 12px; font-weight: 600; color: var(--gray-400); padding: 8px 0; }
+  .date-cell {
+    padding: 10px 0; border-radius: var(--radius-md); font-size: 14px; cursor: pointer;
+    transition: all 0.1s;
+  }
+  .date-cell:hover { background: var(--gray-100); }
+  .date-cell.today { font-weight: 600; color: var(--primary-700); }
+  .date-cell.selected { background: var(--primary-600); color: white; font-weight: 600; }
+  .date-cell.disabled { color: var(--gray-300); cursor: default; }
+  .date-cell.disabled:hover { background: transparent; }
+
+  /* Time slots */
+  .time-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+  .time-slot {
+    padding: 10px; text-align: center; border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+    font-size: 14px; cursor: pointer; transition: all 0.15s;
+  }
+  .time-slot:hover { border-color: var(--primary-400); background: var(--primary-50); }
+  .time-slot.selected { border-color: var(--primary-600); background: var(--primary-600); color: white; font-weight: 500; }
+  .time-slot.unavail { background: var(--gray-50); color: var(--gray-300); cursor: default; border-color: var(--gray-100); }
+
+  /* Questionnaire */
+  .q-group { margin-bottom: 24px; }
+  .q-label { font-size: 14px; font-weight: 500; color: var(--gray-800); margin-bottom: 8px; display: block; }
+  .q-input {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; outline: none; transition: all 0.15s;
+  }
+  .q-input:focus { border-color: var(--primary-500); box-shadow: 0 0 0 3px rgba(20,184,166,0.15); }
+  .q-radio-group { display: flex; flex-direction: column; gap: 8px; }
+  .q-radio {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border: 1px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;
+    transition: all 0.15s; font-size: 14px;
+  }
+  .q-radio:hover { border-color: var(--primary-400); background: var(--primary-50); }
+  .q-radio.selected { border-color: var(--primary-600); background: var(--primary-50); }
+  .q-radio input { accent-color: var(--primary-600); width: 18px; height: 18px; }
+
+  /* ============= ONLINE ORDER FLOW ============= */
+  .order-summary {
+    background: var(--gray-50); border-radius: var(--radius-lg); padding: 20px;
+    border: 1px solid var(--gray-200); margin-top: 24px;
+  }
+  .order-line { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+  .order-line.total { border-top: 1px solid var(--gray-300); margin-top: 8px; padding-top: 16px; font-weight: 600; font-size: 16px; }
+
+  /* IDV Section */
+  .idv-box {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius-lg); padding: 40px;
+    text-align: center; cursor: pointer; transition: all 0.15s;
+  }
+  .idv-box:hover { border-color: var(--primary-400); background: var(--primary-50); }
+  .idv-icon { width: 48px; height: 48px; margin: 0 auto 12px; color: var(--gray-400); }
+
+  /* ============= ORDER TRACKING ============= */
+  .track-timeline { position: relative; padding-left: 32px; }
+  .track-item { position: relative; padding-bottom: 32px; }
+  .track-item:last-child { padding-bottom: 0; }
+  .track-item::before {
+    content: ''; position: absolute; left: -25px; top: 28px; bottom: 0; width: 2px;
+    background: var(--gray-200);
+  }
+  .track-item:last-child::before { display: none; }
+  .track-dot {
+    position: absolute; left: -32px; top: 4px; width: 16px; height: 16px;
+    border-radius: 50%; border: 2px solid var(--gray-300); background: white;
+  }
+  .track-item.done .track-dot { background: var(--primary-600); border-color: var(--primary-600); }
+  .track-item.done::before { background: var(--primary-500); }
+  .track-item.current .track-dot { background: var(--primary-600); border-color: var(--primary-600); box-shadow: 0 0 0 4px var(--primary-100); }
+  .track-label { font-size: 14px; font-weight: 500; color: var(--gray-800); }
+  .track-time { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .track-desc { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+
+  /* ============= PATIENT ACCOUNT ============= */
+  .account-sidebar { display: flex; flex-direction: column; gap: 4px; }
+  .account-link {
+    padding: 10px 16px; border-radius: var(--radius-md); font-size: 14px; color: var(--gray-600);
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 10px;
+  }
+  .account-link:hover { background: var(--gray-100); }
+  .account-link.active { background: var(--primary-50); color: var(--primary-700); font-weight: 500; }
+
+  /* ============= FOOTER ============= */
+  .sf-footer {
+    background: var(--gray-900); color: var(--gray-400); padding: 48px 64px 32px;
+  }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+  .footer-col h4 { color: white; font-size: 14px; margin-bottom: 16px; }
+  .footer-col a { display: block; font-size: 13px; color: var(--gray-400); text-decoration: none; margin-bottom: 10px; }
+  .footer-col a:hover { color: white; }
+  .footer-bottom { border-top: 1px solid var(--gray-700); padding-top: 24px; display: flex; justify-content: space-between; font-size: 12px; }
+  .gphc-badge {
+    display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15); padding: 8px 14px; border-radius: var(--radius-md);
+    font-size: 12px; color: var(--gray-300); margin-top: 12px;
+  }
+
+  /* Consent checkboxes */
+  .consent-item {
+    display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+  }
+  .consent-item input { margin-top: 2px; width: 18px; height: 18px; accent-color: var(--primary-600); flex-shrink: 0; }
+  .consent-item label { color: var(--gray-700); }
+  .consent-item .optional { font-size: 12px; color: var(--gray-400); }
+
+  /* Payment card mock */
+  .pay-methods { display: flex; gap: 8px; margin-bottom: 20px; }
+  .pay-method {
+    flex: 1; padding: 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-md);
+    text-align: center; cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500;
+  }
+  .pay-method.selected { border-color: var(--primary-600); background: var(--primary-50); }
+  .pay-method:hover { border-color: var(--primary-400); }
+
+  /* MHRA logo mock */
+  .mhra-badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
+    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-sm);
+    font-size: 11px; color: #0369a1; font-weight: 500;
+  }
+
+  /* Subscription portal */
+  .sub-card {
+    border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sub-actions { display: flex; gap: 8px; }
+
+  @media (max-width: 768px) {
+    .services-grid { grid-template-columns: 1fr; }
+    .sf-hero { flex-direction: column; padding: 40px 24px; }
+    .sf-hero-image { width: 100%; height: 200px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .time-slots { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== SCREEN 1: HOMEPAGE ====== -->
+<div class="screen-label">
+  Screen 1: Homepage (White-Labelled Storefront)
+  <span class="badge">Patient-Facing</span>
+  <span class="badge">SEO-Optimised</span>
+</div>
+<div class="screen-section">
+  <div class="screen-body">
+    <!-- Header -->
+    <div class="sf-header">
+      <div class="sf-logo">
+        <div class="sf-logo-icon">H</div>
+        <div>
+          <div class="sf-logo-text">High Street Pharmacy</div>
+          <div class="sf-logo-sub">Manchester Central | GPhC: 1234567</div>
+        </div>
+      </div>
+      <nav class="sf-nav">
+        <a href="#" class="active">Home</a>
+        <a href="#">Services</a>
+        <a href="#">Shop Online</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact</a>
+      </nav>
+      <div class="sf-actions">
+        <button class="sf-btn sf-btn-outline">My Account</button>
+        <button class="sf-btn sf-btn-primary">Book Now</button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="sf-hero">
+      <div class="sf-hero-content">
+        <h1>Expert Healthcare,<br>Your Way</h1>
+        <p>Book a consultation at our pharmacy or order clinically-approved treatments online with free home delivery. Professional care you can trust.</p>
+        <div class="sf-hero-ctas">
+          <button class="sf-btn sf-btn-white">Book Consultation</button>
+          <button class="sf-btn sf-btn-ghost">Shop Online</button>
+        </div>
+        <div class="sf-trust">
+          <div class="sf-trust-item">
+            <svg class="sf-trust-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+            GPhC Registered
+          </div>
+          <div class="sf-trust-item">
+            <svg class="sf-trust-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zm3 7V7a3 3 0 10-6 0v2h6z"/></svg>
+            Secure & Confidential
+          </div>
+          <div class="sf-trust-item">
+            <svg class="sf-trust-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+            Qualified Pharmacists
+          </div>
+        </div>
+      </div>
+      <div class="sf-hero-image"><span>Hero Image / Video</span></div>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="sf-section">
+      <div class="sf-section-header">
+        <h2>Our Services</h2>
+        <p>Clinically-approved treatments delivered by qualified healthcare professionals</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #fef3c7, #fde68a)"><div class="emoji">💉</div></div>
+          <div class="service-body">
+            <h3>Weight Management</h3>
+            <p>Clinically-proven GLP-1 treatments including Wegovy and Mounjaro with ongoing pharmacist support.</p>
+            <div class="service-meta">
+              <div class="service-price">From &pound;149 <span>/ month</span></div>
+              <div class="service-modes">
+                <span class="service-mode">In-Branch</span>
+                <span class="service-mode">Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe)"><div class="emoji">✈️</div></div>
+          <div class="service-body">
+            <h3>Travel Health</h3>
+            <p>Vaccinations, antimalarials, and travel health advice for your destination.</p>
+            <div class="service-meta">
+              <div class="service-price">From &pound;35</div>
+              <div class="service-modes">
+                <span class="service-mode">In-Branch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8)"><div class="emoji">🩺</div></div>
+          <div class="service-body">
+            <h3>Sexual Health</h3>
+            <p>Discreet consultations and treatments. Confidential and professional care.</p>
+            <div class="service-meta">
+              <div class="service-price">From &pound;29</div>
+              <div class="service-modes">
+                <span class="service-mode">Online</span>
+                <span class="service-mode">Discreet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0)"><div class="emoji">💊</div></div>
+          <div class="service-body">
+            <h3>Flu Vaccination</h3>
+            <p>Seasonal flu jab available now. Walk-in or book your preferred time.</p>
+            <div class="service-meta">
+              <div class="service-price">&pound;14.99</div>
+              <div class="service-modes">
+                <span class="service-mode">In-Branch</span>
+                <span class="service-mode">Walk-In</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe)"><div class="emoji">🌸</div></div>
+          <div class="service-body">
+            <h3>Women's Health</h3>
+            <p>Contraception, HRT, UTI treatment, and more. Expert female pharmacist available.</p>
+            <div class="service-meta">
+              <div class="service-price">From &pound;25</div>
+              <div class="service-modes">
+                <span class="service-mode">In-Branch</span>
+                <span class="service-mode">Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="service-img" style="background: linear-gradient(135deg, #fef9c3, #fde047)"><div class="emoji">✨</div></div>
+          <div class="service-body">
+            <h3>Skincare</h3>
+            <p>Prescription-strength skincare treatments for acne, rosacea, and anti-ageing.</p>
+            <div class="service-meta">
+              <div class="service-price">From &pound;39</div>
+              <div class="service-modes">
+                <span class="service-mode">Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="sf-footer">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="sf-logo" style="margin-bottom:16px">
+            <div class="sf-logo-icon">H</div>
+            <div class="sf-logo-text" style="color:white">High Street Pharmacy</div>
+          </div>
+          <p style="font-size:13px; line-height:1.7; max-width:320px">Your trusted community pharmacy in Manchester. Professional healthcare services with a personal touch.</p>
+          <div class="gphc-badge">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812z"/></svg>
+            GPhC Registered: 1234567
+          </div>
+          <div class="mhra-badge" style="margin-top:8px">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-7-5z"/></svg>
+            MHRA Registered Internet Pharmacy
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <a href="#">Weight Management</a>
+          <a href="#">Travel Health</a>
+          <a href="#">Sexual Health</a>
+          <a href="#">Flu Vaccination</a>
+          <a href="#">Women's Health</a>
+          <a href="#">View All</a>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <a href="#">Book Appointment</a>
+          <a href="#">Shop Online</a>
+          <a href="#">My Account</a>
+          <a href="#">Track Order</a>
+          <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+          <a href="#">Complaints</a>
+          <a href="#">Data Export</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 High Street Pharmacy. All rights reserved.</span>
+        <span>Powered by Pharmacy One Stop</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 2: BOOKING FLOW ====== -->
+<div class="screen-label">
+  Screen 2: Booking Flow (In-Branch) — Step 2 of 5: Date & Time
+  <span class="badge">5-Step Flow</span>
+</div>
+<div class="screen-section">
+  <div class="screen-body">
+    <div class="sf-header">
+      <div class="sf-logo">
+        <div class="sf-logo-icon">H</div>
+        <div class="sf-logo-text">High Street Pharmacy</div>
+      </div>
+      <div style="font-size:13px; color:var(--gray-500)">Need help? <a href="#" style="color:var(--primary-600); text-decoration:none; font-weight:500">0161 123 4567</a></div>
+    </div>
+
+    <div class="booking-flow">
+      <!-- Steps -->
+      <div class="bf-steps">
+        <div class="bf-step done"><div class="bf-step-num">&#10003;</div><span>Service</span></div>
+        <div class="bf-step-line done"></div>
+        <div class="bf-step active"><div class="bf-step-num">2</div><span>Date & Time</span></div>
+        <div class="bf-step-line"></div>
+        <div class="bf-step"><div class="bf-step-num">3</div><span>Questions</span></div>
+        <div class="bf-step-line"></div>
+        <div class="bf-step"><div class="bf-step-num">4</div><span>Consent & Pay</span></div>
+        <div class="bf-step-line"></div>
+        <div class="bf-step"><div class="bf-step-num">5</div><span>Confirmed</span></div>
+      </div>
+
+      <!-- Selected Service Summary -->
+      <div style="background:var(--primary-50); border:1px solid var(--primary-200); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <div style="font-size:14px; font-weight:600; color:var(--primary-800)">Weight Management Consultation</div>
+          <div style="font-size:12px; color:var(--primary-600)">30 min | Manchester Central Branch</div>
+        </div>
+        <div style="font-size:16px; font-weight:700; color:var(--primary-700)">&pound;50 deposit</div>
+      </div>
+
+      <!-- Calendar Card -->
+      <div class="bf-card">
+        <div class="bf-card-header">
+          <h3>Select Date</h3>
+          <div style="display:flex; align-items:center; gap:16px">
+            <button style="background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:18px">&larr;</button>
+            <span style="font-size:14px; font-weight:600">April 2026</span>
+            <button style="background:none; border:none; cursor:pointer; color:var(--gray-400); font-size:18px">&rarr;</button>
+          </div>
+        </div>
+        <div class="bf-card-body">
+          <div class="date-grid">
+            <div class="date-header">Mon</div><div class="date-header">Tue</div><div class="date-header">Wed</div>
+            <div class="date-header">Thu</div><div class="date-header">Fri</div><div class="date-header">Sat</div>
+            <div class="date-header">Sun</div>
+            <div class="date-cell disabled"></div><div class="date-cell disabled"></div><div class="date-cell disabled">1</div>
+            <div class="date-cell disabled">2</div><div class="date-cell disabled">3</div><div class="date-cell disabled">4</div>
+            <div class="date-cell disabled">5</div>
+            <div class="date-cell disabled">6</div><div class="date-cell disabled">7</div><div class="date-cell disabled">8</div>
+            <div class="date-cell disabled">9</div><div class="date-cell disabled">10</div><div class="date-cell disabled">11</div>
+            <div class="date-cell disabled">12</div>
+            <div class="date-cell disabled">13</div><div class="date-cell disabled">14</div><div class="date-cell disabled">15</div>
+            <div class="date-cell disabled">16</div><div class="date-cell disabled">17</div><div class="date-cell disabled">18</div>
+            <div class="date-cell disabled">19</div>
+            <div class="date-cell disabled">20</div><div class="date-cell disabled">21</div><div class="date-cell disabled">22</div>
+            <div class="date-cell disabled">23</div><div class="date-cell today">24</div><div class="date-cell selected">25</div>
+            <div class="date-cell">26</div>
+            <div class="date-cell">27</div><div class="date-cell">28</div><div class="date-cell">29</div>
+            <div class="date-cell">30</div><div class="date-cell disabled"></div><div class="date-cell disabled"></div>
+            <div class="date-cell disabled"></div>
+          </div>
+
+          <div style="margin-top:24px">
+            <div style="font-size:14px; font-weight:500; margin-bottom:12px; color:var(--gray-700)">Available times for <strong>Friday 25 April</strong></div>
+            <div class="time-slots">
+              <div class="time-slot">09:00</div>
+              <div class="time-slot">09:30</div>
+              <div class="time-slot">10:00</div>
+              <div class="time-slot unavail">10:30</div>
+              <div class="time-slot selected">11:00</div>
+              <div class="time-slot">11:30</div>
+              <div class="time-slot unavail">12:00</div>
+              <div class="time-slot">14:00</div>
+              <div class="time-slot">14:30</div>
+              <div class="time-slot">15:00</div>
+              <div class="time-slot">15:30</div>
+              <div class="time-slot">16:00</div>
+            </div>
+          </div>
+        </div>
+        <div class="bf-card-footer">
+          <button class="sf-btn sf-btn-outline">&larr; Back</button>
+          <button class="sf-btn sf-btn-primary">Continue to Questions &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 3: ONLINE ORDER FLOW ====== -->
+<div class="screen-label">
+  Screen 3: Online Order Flow — Step 4 of 5: Consent & Pay
+  <span class="badge">POM-Gated</span>
+  <span class="badge">IDV Complete</span>
+</div>
+<div class="screen-section">
+  <div class="screen-body">
+    <div class="sf-header">
+      <div class="sf-logo">
+        <div class="sf-logo-icon">H</div>
+        <div class="sf-logo-text">High Street Pharmacy</div>
+      </div>
+      <div class="mhra-badge">MHRA Registered Internet Pharmacy</div>
+    </div>
+
+    <div class="booking-flow">
+      <!-- Steps -->
+      <div class="bf-steps">
+        <div class="bf-step done"><div class="bf-step-num">&#10003;</div><span>Indication</span></div>
+        <div class="bf-step-line done"></div>
+        <div class="bf-step done"><div class="bf-step-num">&#10003;</div><span>Questionnaire</span></div>
+        <div class="bf-step-line done"></div>
+        <div class="bf-step done"><div class="bf-step-num">&#10003;</div><span>ID Verify</span></div>
+        <div class="bf-step-line done"></div>
+        <div class="bf-step active"><div class="bf-step-num">4</div><span>Consent & Pay</span></div>
+        <div class="bf-step-line"></div>
+        <div class="bf-step"><div class="bf-step-num">5</div><span>Tracking</span></div>
+      </div>
+
+      <!-- Alert: ID Verified -->
+      <div style="background:var(--success-50); border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:12px 16px; margin-bottom:24px; display:flex; align-items:center; gap:10px; font-size:14px; color:var(--success-700)">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+        <strong>Identity Verified</strong> — James Davies, DOB: 15/03/1990
+      </div>
+
+      <div class="bf-card">
+        <div class="bf-card-header">
+          <h3>Consent & Payment</h3>
+        </div>
+        <div class="bf-card-body">
+          <!-- Order Summary -->
+          <div style="font-size:15px; font-weight:600; margin-bottom:16px">Order Summary</div>
+          <div class="order-summary">
+            <div class="order-line">
+              <span>Wegovy 0.25mg Starter Pen (4 weeks)</span>
+              <span style="font-weight:500">&pound;199.00</span>
+            </div>
+            <div class="order-line">
+              <span>Signed Cold-Chain Delivery (Next Day)</span>
+              <span style="font-weight:500">&pound;9.00</span>
+            </div>
+            <div class="order-line total">
+              <span>Total</span>
+              <span>&pound;208.00</span>
+            </div>
+          </div>
+
+          <!-- Consent -->
+          <div style="font-size:15px; font-weight:600; margin:28px 0 16px">Consent</div>
+          <div class="consent-item">
+            <input type="checkbox" id="c1" checked>
+            <label for="c1">I confirm the medical information I provided is accurate and complete. I understand a qualified prescriber will review my order. <span class="required" style="color:var(--error-500)">*</span></label>
+          </div>
+          <div class="consent-item">
+            <input type="checkbox" id="c2" checked>
+            <label for="c2">I consent to a remote clinical consultation and understand this is a prescription-only medicine. <span class="required" style="color:var(--error-500)">*</span></label>
+          </div>
+          <div class="consent-item">
+            <input type="checkbox" id="c3">
+            <label for="c3">I agree to share my consultation details with my GP. <span class="optional">(Recommended but optional)</span></label>
+          </div>
+          <div class="consent-item">
+            <input type="checkbox" id="c4" checked>
+            <label for="c4">I authorise delivery to my address and understand signed-for delivery is required. <span class="required" style="color:var(--error-500)">*</span></label>
+          </div>
+          <div class="consent-item" style="border:none">
+            <input type="checkbox" id="c5">
+            <label for="c5">I'd like to receive health tips and offers from High Street Pharmacy. <span class="optional">(Optional)</span></label>
+          </div>
+
+          <div style="background:var(--warning-50); border:1px solid #fde68a; border-radius:var(--radius-md); padding:12px 16px; margin:20px 0; font-size:13px; color:#92400e; display:flex; gap:10px">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20" style="flex-shrink:0; margin-top:1px"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92z"/></svg>
+            <div><strong>No returns on prescription medicines.</strong> Under Consumer Contracts Regulations 2013, prescription medicines cannot be returned once dispatched. If your order is clinically rejected, you will receive a full automatic refund.</div>
+          </div>
+
+          <!-- Payment -->
+          <div style="font-size:15px; font-weight:600; margin:28px 0 16px">Payment Method</div>
+          <div class="pay-methods">
+            <div class="pay-method selected">
+              <div style="font-size:20px; margin-bottom:4px">&#63743;</div>
+              Apple Pay
+            </div>
+            <div class="pay-method">
+              <div style="font-size:20px; margin-bottom:4px">G</div>
+              Google Pay
+            </div>
+            <div class="pay-method">
+              <div style="font-size:16px; margin-bottom:4px">&#128179;</div>
+              Card
+            </div>
+          </div>
+
+          <div style="text-align:center; margin-top:24px">
+            <button class="sf-btn sf-btn-primary" style="width:100%; padding:16px; font-size:16px; border-radius:var(--radius-md)">
+              Pay &pound;208.00 Securely
+            </button>
+            <div style="font-size:12px; color:var(--gray-400); margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+              Secured by Stripe. Your payment details are encrypted end-to-end.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 4: ORDER TRACKING ====== -->
+<div class="screen-label">
+  Screen 4: Order Tracking Page
+  <span class="badge">Branded URL: /track/ORD-2847</span>
+</div>
+<div class="screen-section">
+  <div class="screen-body">
+    <div class="sf-header">
+      <div class="sf-logo">
+        <div class="sf-logo-icon">H</div>
+        <div class="sf-logo-text">High Street Pharmacy</div>
+      </div>
+      <div style="font-size:13px; color:var(--gray-500)">Order <strong style="color:var(--gray-800)">#ORD-2847</strong></div>
+    </div>
+
+    <div style="max-width:640px; margin:0 auto; padding:40px 24px">
+      <!-- Status Banner -->
+      <div style="background:linear-gradient(135deg, var(--primary-700), var(--primary-600)); color:white; border-radius:var(--radius-lg); padding:24px 28px; margin-bottom:32px">
+        <div style="font-size:13px; opacity:0.8; margin-bottom:4px">Current Status</div>
+        <div style="font-size:22px; font-weight:700">Out for Delivery</div>
+        <div style="font-size:14px; opacity:0.85; margin-top:4px">Estimated delivery: Today by 6pm</div>
+        <div style="display:flex; gap:8px; margin-top:16px">
+          <div style="flex:1; height:4px; border-radius:2px; background:white"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:white"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:white"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:white"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.3)"></div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div style="font-size:16px; font-weight:600; margin-bottom:20px">Tracking History</div>
+      <div class="track-timeline">
+        <div class="track-item done">
+          <div class="track-dot"></div>
+          <div class="track-label">Order Placed</div>
+          <div class="track-time">24 Apr 2026, 09:15</div>
+          <div class="track-desc">Payment pre-authorised. Awaiting clinical review.</div>
+        </div>
+        <div class="track-item done">
+          <div class="track-dot"></div>
+          <div class="track-label">Clinical Review Complete</div>
+          <div class="track-time">24 Apr 2026, 11:42</div>
+          <div class="track-desc">Reviewed and approved by a qualified prescriber. Prescription issued.</div>
+        </div>
+        <div class="track-item done">
+          <div class="track-dot"></div>
+          <div class="track-label">Dispensed & Packed</div>
+          <div class="track-time">24 Apr 2026, 13:10</div>
+          <div class="track-desc">Dispensed by GPhC-registered pharmacist. Cold-chain packaging applied.</div>
+        </div>
+        <div class="track-item done">
+          <div class="track-dot"></div>
+          <div class="track-label">Dispatched</div>
+          <div class="track-time">24 Apr 2026, 14:30</div>
+          <div class="track-desc">Sent via DPD Cold-Chain Express. Tracking: DPD-UK-98765432</div>
+        </div>
+        <div class="track-item current">
+          <div class="track-dot"></div>
+          <div class="track-label">Out for Delivery</div>
+          <div class="track-time">25 Apr 2026, 08:45</div>
+          <div class="track-desc">Your parcel is on the van. Signed-for delivery required.</div>
+        </div>
+        <div class="track-item">
+          <div class="track-dot"></div>
+          <div class="track-label">Delivered</div>
+          <div class="track-time">Estimated today by 6pm</div>
+        </div>
+      </div>
+
+      <!-- Order Details -->
+      <div style="margin-top:40px">
+        <div style="font-size:16px; font-weight:600; margin-bottom:16px">Order Details</div>
+        <div class="order-summary">
+          <div class="order-line">
+            <span style="font-weight:500">Wegovy 0.25mg Starter Pen</span>
+            <span>&pound;199.00</span>
+          </div>
+          <div class="order-line">
+            <span>Signed Cold-Chain Delivery</span>
+            <span>&pound;9.00</span>
+          </div>
+          <div class="order-line total">
+            <span>Total Paid</span>
+            <span>&pound;208.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:32px">
+        <div style="font-size:13px; color:var(--gray-500)">Need help with your order?</div>
+        <a href="#" style="font-size:14px; color:var(--primary-600); text-decoration:none; font-weight:500">Contact High Street Pharmacy</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 5: PATIENT ACCOUNT ====== -->
+<div class="screen-label">
+  Screen 5: Patient Account — Subscriptions
+  <span class="badge">GDPR Compliant</span>
+</div>
+<div class="screen-section">
+  <div class="screen-body">
+    <div class="sf-header">
+      <div class="sf-logo">
+        <div class="sf-logo-icon">H</div>
+        <div class="sf-logo-text">High Street Pharmacy</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px">
+        <div style="width:32px; height:32px; border-radius:50%; background:var(--primary-100); color:var(--primary-700); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px">JD</div>
+        <span style="font-size:14px; font-weight:500">James Davies</span>
+      </div>
+    </div>
+
+    <div style="display:flex; max-width:960px; margin:0 auto; padding:32px 24px; gap:32px">
+      <!-- Sidebar -->
+      <div style="width:220px; flex-shrink:0">
+        <div class="account-sidebar">
+          <div class="account-link">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Overview
+          </div>
+          <div class="account-link">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Bookings
+          </div>
+          <div class="account-link">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            Orders
+          </div>
+          <div class="account-link active">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Subscriptions
+          </div>
+          <div class="account-link">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            Profile
+          </div>
+          <div class="account-link">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857"/></svg>
+            Family Members
+          </div>
+          <div class="account-link" style="color:var(--gray-400); margin-top:16px; border-top:1px solid var(--gray-100); padding-top:16px">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export My Data
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div style="flex:1">
+        <h2 style="font-size:22px; font-weight:700; margin-bottom:24px">My Subscriptions</h2>
+
+        <!-- Active Subscription -->
+        <div class="sub-card" style="margin-bottom:16px">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <span style="font-size:16px; font-weight:600">Wegovy 0.5mg</span>
+              <span style="display:inline-block; background:var(--success-50); color:var(--success-700); padding:2px 10px; border-radius:var(--radius-full); font-size:12px; font-weight:500">Active</span>
+            </div>
+            <div style="font-size:13px; color:var(--gray-500)">Monthly | Next delivery: 22 May 2026</div>
+            <div style="font-size:13px; color:var(--gray-500); margin-top:2px">Re-screen questionnaire due: 18 May 2026</div>
+          </div>
+          <div class="sub-actions">
+            <button class="sf-btn sf-btn-outline" style="font-size:13px; padding:6px 14px">Skip Next</button>
+            <button class="sf-btn sf-btn-outline" style="font-size:13px; padding:6px 14px">Pause</button>
+            <button class="sf-btn sf-btn-outline" style="font-size:13px; padding:6px 14px; color:var(--error-600); border-color:var(--error-200)">Cancel</button>
+          </div>
+        </div>
+
+        <div style="font-size:16px; font-weight:600; margin:32px 0 16px">Subscription History</div>
+        <div style="border:1px solid var(--gray-200); border-radius:var(--radius-lg); overflow:hidden">
+          <table style="width:100%; font-size:14px; border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:10px 16px; font-size:12px; color:var(--gray-500); background:var(--gray-50); border-bottom:1px solid var(--gray-200); font-weight:500; text-transform:uppercase; letter-spacing:0.04em">Date</th>
+                <th style="text-align:left; padding:10px 16px; font-size:12px; color:var(--gray-500); background:var(--gray-50); border-bottom:1px solid var(--gray-200); font-weight:500; text-transform:uppercase; letter-spacing:0.04em">Product</th>
+                <th style="text-align:left; padding:10px 16px; font-size:12px; color:var(--gray-500); background:var(--gray-50); border-bottom:1px solid var(--gray-200); font-weight:500; text-transform:uppercase; letter-spacing:0.04em">Amount</th>
+                <th style="text-align:left; padding:10px 16px; font-size:12px; color:var(--gray-500); background:var(--gray-50); border-bottom:1px solid var(--gray-200); font-weight:500; text-transform:uppercase; letter-spacing:0.04em">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">24 Apr 2026</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">Wegovy 0.5mg</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">&pound;208.00</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)"><span style="background:var(--success-50); color:var(--success-700); padding:2px 8px; border-radius:var(--radius-full); font-size:12px; font-weight:500">Delivered</span></td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">24 Mar 2026</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">Wegovy 0.25mg</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)">&pound;208.00</td>
+                <td style="padding:12px 16px; border-bottom:1px solid var(--gray-100)"><span style="background:var(--success-50); color:var(--success-700); padding:2px 8px; border-radius:var(--radius-full); font-size:12px; font-weight:500">Delivered</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div style="padding:24px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+  <a href="design-system.html" style="padding:10px 20px; background:white; color:var(--gray-700); border:1px solid var(--gray-300); border-radius:var(--radius-md); text-decoration:none; font-size:14px; font-weight:500">&larr; Design System</a>
+  <a href="02-pharmacy-admin.html" style="padding:10px 20px; background:var(--primary-600); color:white; border-radius:var(--radius-md); text-decoration:none; font-size:14px; font-weight:500">Pharmacy Admin Console &rarr;</a>
+  <a href="03-clinician-dashboard.html" style="padding:10px 20px; background:white; color:var(--gray-700); border:1px solid var(--gray-300); border-radius:var(--radius-md); text-decoration:none; font-size:14px; font-weight:500">Clinician Dashboard &rarr;</a>
+  <a href="04-super-admin.html" style="padding:10px 20px; background:white; color:var(--gray-700); border:1px solid var(--gray-300); border-radius:var(--radius-md); text-decoration:none; font-size:14px; font-weight:500">Super Admin &rarr;</a>
+</div>
+
+</body>
+</html>

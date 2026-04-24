@@ -1,0 +1,786 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  SUPER_ADMIN
+  SUPPORT_AGENT
+  TENANT_OWNER
+  BRANCH_MANAGER
+  PHARMACIST
+  PRESCRIBER
+  DISPENSER
+  DISPATCH_CLERK
+  RECEPTIONIST
+  PATIENT
+}
+
+enum TenantStatus {
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum SubscriptionTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum ServiceFulfilmentMode {
+  IN_BRANCH
+  ONLINE_DELIVERY
+  CLICK_AND_COLLECT
+}
+
+enum PgdStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  SUPERSEDED
+  RETIRED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+  RESCHEDULED
+}
+
+enum OrderStatus {
+  RECEIVED
+  AWAITING_IDV
+  IDV_PASSED
+  IDV_FAILED
+  AWAITING_REVIEW
+  QUERIED
+  APPROVED
+  REJECTED
+  DISPENSING
+  DISPATCHED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORISED
+  CAPTURED
+  REFUNDED
+  PARTIAL_REFUND
+  FAILED
+}
+
+enum ShipmentStatus {
+  PENDING
+  PICKING
+  PACKED
+  DISPATCHED
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum ConsultationOutcome {
+  SUPPLY_AUTHORISED
+  SUPPLY_REFUSED
+  REFERRAL_GP
+  REFERRAL_AE
+  FOLLOW_UP_REQUIRED
+  INCOMPLETE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+  PENDING_RESCREEN
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  IMPERSONATE
+  APPROVE
+  REJECT
+  DISPATCH
+  REFUND
+  EXPORT
+}
+
+enum DspStatus {
+  NOT_APPLICABLE
+  PENDING_VERIFICATION
+  VERIFIED
+  EXPIRED
+  REJECTED
+}
+
+// ============================================================
+// PLATFORM (Super-Admin Level)
+// ============================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  firstName       String
+  lastName        String
+  phone           String?
+  role            UserRole
+  mfaEnabled      Boolean   @default(false)
+  mfaSecret       String?
+  emailVerified   Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Platform-level users (SUPER_ADMIN, SUPPORT_AGENT) have no tenant
+  tenantId        String?
+  tenant          Tenant?   @relation(fields: [tenantId], references: [id])
+
+  // Staff details for tenant users
+  staffProfile    StaffProfile?
+
+  // Patient profile
+  patientProfile  PatientProfile?
+
+  // Relations
+  refreshTokens   RefreshToken[]
+  auditLogs       AuditLog[]       @relation("AuditUser")
+  impersonations  AuditLog[]       @relation("ImpersonatedBy")
+
+  // Bookings created by this staff member
+  bookingsCreated Booking[]        @relation("BookingCreatedBy")
+  consultations   Consultation[]   @relation("ConsultationClinician")
+  orderReviews    OnlineOrder[]    @relation("OrderReviewer")
+  prescriptions   Prescription[]   @relation("PrescriptionPrescriber")
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([role])
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ============================================================
+// TENANTS (Pharmacy Businesses)
+// ============================================================
+
+model Tenant {
+  id                String           @id @default(cuid())
+  name              String
+  slug              String           @unique
+  status            TenantStatus     @default(ONBOARDING)
+  tier              SubscriptionTier @default(STARTER)
+
+  // Branding (white-label)
+  logoUrl           String?
+  primaryColor      String?          @default("#0d9488")
+  secondaryColor    String?          @default("#6366f1")
+  faviconUrl        String?
+
+  // Business details
+  companyNumber     String?
+  vatNumber         String?
+  gphcNumber        String?
+
+  // DSP (Distance-Selling Pharmacy)
+  dspStatus         DspStatus        @default(NOT_APPLICABLE)
+  dspNumber         String?
+  dspVerifiedAt     DateTime?
+  dspEvidenceUrl    String?
+  dspNextReviewDate DateTime?
+  mhraLogoUrl       String?
+
+  // Domain
+  customDomain      String?          @unique
+  subdomain         String?          @unique
+
+  // Stripe
+  stripeAccountId   String?
+  stripeCustomerId  String?
+
+  // Onboarding
+  onboardingStep    Int              @default(0)
+  goLiveAt          DateTime?
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  users             User[]
+  branches          Branch[]
+  services          TenantService[]
+  bookings          Booking[]
+  onlineOrders      OnlineOrder[]
+  patients          PatientProfile[]
+  subscriptions     PatientSubscription[]
+  invoices          Invoice[]
+  domains           Domain[]
+  auditLogs         AuditLog[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model Branch {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name            String
+  address         String
+  city            String
+  postcode        String
+  phone           String?
+  email           String?
+  latitude        Float?
+  longitude       Float?
+  isActive        Boolean  @default(true)
+
+  // Opening hours (JSON: { mon: { open: "09:00", close: "18:00" }, ... })
+  openingHours    Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  staff           StaffProfile[]
+  services        BranchService[]
+  bookings        Booking[]
+  onlineOrders    OnlineOrder[]
+
+  @@index([tenantId])
+}
+
+model StaffProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchId          String?
+  branch            Branch?  @relation(fields: [branchId], references: [id])
+  gphcNumber        String?
+  gmcNumber         String?
+  prescribingCategory String?  // e.g. "Independent Prescriber"
+  competencies      Json?    // PGD IDs this clinician is competent for
+  cpdRecordUrl      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([branchId])
+}
+
+// ============================================================
+// CLINICAL: PGDs & Services
+// ============================================================
+
+model Pgd {
+  id                String    @id @default(cuid())
+  title             String
+  version           String
+  status            PgdStatus @default(DRAFT)
+  therapyArea       String    // e.g. "Weight Management", "Travel Health"
+  indication        String
+  inclusionCriteria Json
+  exclusionCriteria Json
+  redFlags          Json
+  authorisedProducts Json     // Array of PomProduct references
+  doseRegimen       Json
+  counsellingPoints Json?
+  competenciesRequired Json?
+  fulfilmentModes   ServiceFulfilmentMode[]
+  reviewDate        DateTime?
+
+  // Governance
+  authorId          String?
+  reviewerId        String?
+  clinicalLeadId    String?
+  publishedAt       DateTime?
+  supersededAt      DateTime?
+  supersededById    String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  services          TenantService[]
+  consultations     Consultation[]
+  clinicTemplates   ClinicTemplate[]
+
+  @@index([status])
+  @@index([therapyArea])
+}
+
+model PomProduct {
+  id              String   @id @default(cuid())
+  name            String
+  genericName     String?
+  strength        String
+  form            String   // e.g. "Injection", "Tablet", "Cream"
+  manufacturer    String?
+  coldChain       Boolean  @default(false)
+  scheduledDrug   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+}
+
+model ClinicTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  therapyArea     String
+  pgdIds          String[] // References to PGD IDs
+  pgds            Pgd[]
+  consentFormCopy String?
+  educationContent String?
+  aftercareContent String?
+  defaultPrice    Float?
+  defaultFulfilmentModes ServiceFulfilmentMode[]
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TenantService {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pgdId           String
+  pgd             Pgd      @relation(fields: [pgdId], references: [id])
+  name            String
+  description     String?
+  heroImageUrl    String?
+  price           Float
+  depositAmount   Float?
+  duration        Int?     // minutes
+  capacity        Int      @default(1)  // per slot
+  bufferTime      Int      @default(0)  // minutes between appointments
+  fulfilmentModes ServiceFulfilmentMode[]
+  isActive        Boolean  @default(true)
+  isDiscreet      Boolean  @default(false)
+
+  // Questionnaire (JSON schema for branching logic)
+  questionnaireSchema Json?
+
+  // Consent form customisation
+  consentCopy     String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  branchServices  BranchService[]
+  bookings        Booking[]
+  onlineOrders    OnlineOrder[]
+
+  @@unique([tenantId, pgdId])
+  @@index([tenantId])
+}
+
+model BranchService {
+  id              String         @id @default(cuid())
+  branchId        String
+  branch          Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  serviceId       String
+  service         TenantService  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  priceOverride   Float?
+  isActive        Boolean        @default(true)
+
+  @@unique([branchId, serviceId])
+  @@index([branchId])
+}
+
+// ============================================================
+// PATIENTS
+// ============================================================
+
+model PatientProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  dateOfBirth     DateTime?
+  gender          String?
+  address         String?
+  city            String?
+  postcode        String?
+  nhsNumber       String?
+  gpPractice      String?
+  gpSharingConsent Boolean @default(false)
+  marketingConsent Boolean @default(false)
+
+  // IDV (Identity Verification)
+  idvStatus       String?  // PENDING, PASSED, FAILED, EXPIRED
+  idvProvider     String?  // Onfido, Yoti, Stripe Identity
+  idvCompletedAt  DateTime?
+  idvExpiresAt    DateTime?
+  idvDocumentType String?
+
+  // Family members (JSON array)
+  familyMembers   Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  bookings        Booking[]
+  onlineOrders    OnlineOrder[]
+  consultations   Consultation[]
+  subscriptions   PatientSubscription[]
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+// ============================================================
+// BOOKINGS (In-Branch)
+// ============================================================
+
+model Booking {
+  id              String        @id @default(cuid())
+  reference       String        @unique  // e.g. BK-4521
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
+  branchId        String
+  branch          Branch        @relation(fields: [branchId], references: [id])
+  serviceId       String
+  service         TenantService @relation(fields: [serviceId], references: [id])
+  patientId       String
+  patient         PatientProfile @relation(fields: [patientId], references: [id])
+  createdById     String?
+  createdBy       User?         @relation("BookingCreatedBy", fields: [createdById], references: [id])
+
+  status          BookingStatus @default(PENDING)
+  date            DateTime
+  startTime       String        // "09:00"
+  endTime         String        // "09:30"
+  source          String        @default("ONLINE") // ONLINE, PHONE, WALK_IN
+
+  // Intake
+  questionnaireAnswers Json?
+  consentGiven    Boolean       @default(false)
+  consentAt       DateTime?
+
+  // Payment
+  paymentStatus   PaymentStatus?
+  paymentAmount   Float?
+  stripePaymentId String?
+
+  // Notes
+  notes           String?
+  cancellationReason String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  consultation    Consultation?
+
+  @@index([tenantId])
+  @@index([branchId])
+  @@index([patientId])
+  @@index([date])
+  @@index([status])
+}
+
+// ============================================================
+// ONLINE ORDERS
+// ============================================================
+
+model OnlineOrder {
+  id              String       @id @default(cuid())
+  reference       String       @unique  // e.g. ORD-2847
+  tenantId        String
+  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  branchId        String       // Dispensing branch
+  branch          Branch       @relation(fields: [branchId], references: [id])
+  serviceId       String
+  service         TenantService @relation(fields: [serviceId], references: [id])
+  patientId       String
+  patient         PatientProfile @relation(fields: [patientId], references: [id])
+
+  status          OrderStatus  @default(RECEIVED)
+  productName     String
+  productStrength String?
+  quantity        Int          @default(1)
+  isRepeat        Boolean      @default(false)
+  isColdChain     Boolean      @default(false)
+  isDiscreet      Boolean      @default(false)
+
+  // Questionnaire & IDV
+  questionnaireAnswers Json?
+  idvPassed       Boolean      @default(false)
+
+  // Clinical Review
+  reviewerId      String?
+  reviewer        User?        @relation("OrderReviewer", fields: [reviewerId], references: [id])
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  clinicalReason  String?      // Reason for rejection/query
+  slaDeadline     DateTime?
+
+  // Consent
+  consentClinical Boolean      @default(false)
+  consentRemote   Boolean      @default(false)
+  consentGpShare  Boolean      @default(false)
+  consentDelivery Boolean      @default(false)
+
+  // Payment
+  paymentStatus   PaymentStatus @default(PENDING)
+  subtotal        Float
+  deliveryFee     Float        @default(0)
+  totalAmount     Float
+  stripePaymentId String?
+  stripeRefundId  String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  consultation    Consultation?
+  prescription    Prescription?
+  shipment        Shipment?
+  subscription    PatientSubscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId  String?
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([patientId])
+  @@index([reviewerId])
+}
+
+// ============================================================
+// CONSULTATIONS & PRESCRIPTIONS
+// ============================================================
+
+model Consultation {
+  id              String   @id @default(cuid())
+  tenantId        String
+  pgdId           String
+  pgd             Pgd      @relation(fields: [pgdId], references: [id])
+  pgdVersion      String
+  patientId       String
+  patient         PatientProfile @relation(fields: [patientId], references: [id])
+  clinicianId     String
+  clinician       User     @relation("ConsultationClinician", fields: [clinicianId], references: [id])
+
+  // Link to booking or online order
+  bookingId       String?  @unique
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+  onlineOrderId   String?  @unique
+  onlineOrder     OnlineOrder? @relation(fields: [onlineOrderId], references: [id])
+
+  outcome         ConsultationOutcome?
+  productSupplied String?
+  doseGiven       String?
+  batchNumber     String?
+  clinicalNotes   String?
+  digitalSignature String?
+  fulfilmentMode  ServiceFulfilmentMode?
+
+  // Immutable record (append-only)
+  decisionLog     Json?    // Array of { step, answer, timestamp }
+
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([patientId])
+  @@index([clinicianId])
+}
+
+model Prescription {
+  id              String   @id @default(cuid())
+  onlineOrderId   String   @unique
+  onlineOrder     OnlineOrder @relation(fields: [onlineOrderId], references: [id])
+  prescriberId    String
+  prescriber      User     @relation("PrescriptionPrescriber", fields: [prescriberId], references: [id])
+  patientName     String
+  patientDob      DateTime
+  drugName        String
+  dose            String
+  directions      String
+  quantity        String
+  pharmacyName    String
+  pharmacyGphc    String
+  prescriberName  String
+  prescriberReg   String
+  signedAt        DateTime @default(now())
+  pdfUrl          String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([prescriberId])
+}
+
+// ============================================================
+// DISPATCH & SHIPPING
+// ============================================================
+
+model Shipment {
+  id              String         @id @default(cuid())
+  onlineOrderId   String         @unique
+  onlineOrder     OnlineOrder    @relation(fields: [onlineOrderId], references: [id])
+  status          ShipmentStatus @default(PENDING)
+  courier         String?        // ROYAL_MAIL, DPD, EVRI, COLD_CHAIN
+  trackingNumber  String?
+  trackingUrl     String?
+  labelUrl        String?
+  dispensingLabelUrl String?
+  isColdChain     Boolean        @default(false)
+  isSignedFor     Boolean        @default(true)
+  isDiscreet      Boolean        @default(false)
+  dispatchCutoff  DateTime?
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  signatureUrl    String?
+  notes           String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+// ============================================================
+// SUBSCRIPTIONS (Repeat Orders)
+// ============================================================
+
+model PatientSubscription {
+  id              String             @id @default(cuid())
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  patientId       String
+  patient         PatientProfile     @relation(fields: [patientId], references: [id])
+  productName     String
+  dose            String
+  frequency       String             @default("MONTHLY") // MONTHLY, QUARTERLY
+  status          SubscriptionStatus @default(ACTIVE)
+  nextDeliveryDate DateTime?
+  nextRescreenDate DateTime?
+  safetyWindowDays Int               @default(60)
+  stripeSubId     String?
+  pausedAt        DateTime?
+  cancelledAt     DateTime?
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  orders          OnlineOrder[]
+
+  @@index([tenantId])
+  @@index([patientId])
+  @@index([status])
+}
+
+// ============================================================
+// DOMAINS & INFRASTRUCTURE
+// ============================================================
+
+model Domain {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  domain          String   @unique
+  type            String   @default("CUSTOM") // CUSTOM, SUBDOMAIN
+  sslStatus       String   @default("PENDING") // PENDING, ACTIVE, EXPIRED, FAILED
+  sslExpiresAt    DateTime?
+  dnsConfigured   Boolean  @default(false)
+  autoRenewal     Boolean  @default(true)
+  expiresAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+// ============================================================
+// BILLING
+// ============================================================
+
+model Invoice {
+  id              String   @id @default(cuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  reference       String   @unique
+  amount          Float
+  vatAmount       Float    @default(0)
+  totalAmount     Float
+  status          String   @default("PENDING") // PENDING, PAID, OVERDUE, CANCELLED
+  dueDate         DateTime
+  paidAt          DateTime?
+  stripeInvoiceId String?
+  lineItems       Json     // Array of { description, quantity, unitPrice, total }
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+// ============================================================
+// AUDIT LOG (Immutable, append-only)
+// ============================================================
+
+model AuditLog {
+  id              String      @id @default(cuid())
+  tenantId        String?
+  tenant          Tenant?     @relation(fields: [tenantId], references: [id])
+  userId          String
+  user            User        @relation("AuditUser", fields: [userId], references: [id])
+  impersonatedById String?
+  impersonatedBy  User?       @relation("ImpersonatedBy", fields: [impersonatedById], references: [id])
+  action          AuditAction
+  resource        String      // e.g. "booking", "online_order", "pgd"
+  resourceId      String?
+  details         Json?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime    @default(now())
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resource, resourceId])
+}

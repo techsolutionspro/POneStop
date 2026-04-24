@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin Console - Pharmacy One Stop Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-50:#f0fdfa;--primary-100:#ccfbf1;--primary-200:#99f6e4;--primary-300:#5eead4;
+    --primary-400:#2dd4bf;--primary-500:#14b8a6;--primary-600:#0d9488;--primary-700:#0f766e;
+    --primary-800:#115e59;--primary-900:#134e4a;
+    --gray-25:#fcfcfd;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+    --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;
+    --success-50:#f0fdf4;--success-500:#22c55e;--success-600:#16a34a;--success-700:#15803d;
+    --warning-50:#fffbeb;--warning-500:#f59e0b;--warning-600:#d97706;
+    --error-50:#fef2f2;--error-500:#ef4444;--error-600:#dc2626;--error-700:#b91c1c;
+    --info-50:#eff6ff;--info-500:#3b82f6;--info-600:#2563eb;
+    --violet-50:#f5f3ff;--violet-500:#8b5cf6;--violet-600:#7c3aed;--violet-700:#6d28d9;
+    --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-full:9999px;
+    --shadow-xs:0 1px 2px rgba(0,0,0,0.05);--shadow-sm:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;color:var(--gray-900);background:var(--gray-100);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+  .screen-label{background:var(--gray-900);color:white;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+  .screen-label .badge{background:rgba(255,255,255,0.15);border-radius:var(--radius-full);padding:3px 10px;font-size:11px;text-transform:none;letter-spacing:0}
+  .screen-section{border:2px solid var(--gray-200);border-radius:var(--radius-xl);margin:32px 24px;overflow:hidden;background:var(--gray-50)}
+
+  .admin-layout{display:flex;min-height:800px}
+  .admin-sidebar{width:240px;background:var(--gray-900);display:flex;flex-direction:column;flex-shrink:0}
+  .admin-main{flex:1;display:flex;flex-direction:column;background:var(--gray-50)}
+  .admin-topbar{height:56px;background:white;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+  .admin-content{flex:1;padding:24px;overflow-y:auto}
+
+  /* Dark Sidebar for Super Admin */
+  .sa-brand{padding:20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:12px}
+  .sa-brand-icon{width:36px;height:36px;border-radius:var(--radius-md);background:var(--primary-500);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px}
+  .sa-brand-name{font-size:14px;font-weight:600;color:white}
+  .sa-brand-sub{font-size:11px;color:var(--gray-400)}
+  .sa-section{padding:8px 12px}
+  .sa-section-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-500);padding:8px 12px 4px}
+  .sa-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);font-size:13px;color:var(--gray-400);cursor:pointer;transition:all 0.15s}
+  .sa-item:hover{background:rgba(255,255,255,0.08);color:white}
+  .sa-item.active{background:rgba(20,184,166,0.15);color:var(--primary-400);font-weight:500}
+  .sa-item svg{width:18px;height:18px;opacity:0.6;flex-shrink:0}
+  .sa-item.active svg{opacity:1}
+  .sa-badge{margin-left:auto;background:var(--error-500);color:white;font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-full)}
+
+  .card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:var(--shadow-xs);overflow:hidden}
+  .card-header{padding:14px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+  .card-header h3{font-size:15px;font-weight:600}
+
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:500}
+  .badge-success{background:var(--success-50);color:var(--success-700)}
+  .badge-warning{background:var(--warning-50);color:var(--warning-600)}
+  .badge-error{background:var(--error-50);color:var(--error-700)}
+  .badge-info{background:var(--info-50);color:var(--info-600)}
+  .badge-neutral{background:var(--gray-100);color:var(--gray-600)}
+  .badge-primary{background:var(--primary-50);color:var(--primary-700)}
+  .badge-violet{background:var(--violet-50);color:var(--violet-700)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+  .btn-primary{background:var(--primary-600);color:white}.btn-primary:hover{background:var(--primary-700)}
+  .btn-outline{background:white;color:var(--gray-700);border:1px solid var(--gray-300)}.btn-outline:hover{background:var(--gray-50)}
+  .btn-ghost{background:none;color:var(--gray-600)}.btn-ghost:hover{background:var(--gray-100)}
+  .btn-danger{background:var(--error-600);color:white}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;padding:10px 16px;font-weight:500;font-size:11px;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--gray-200);background:var(--gray-50)}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)}
+  tbody tr:hover{background:var(--gray-50)}
+
+  .stat-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-xs)}
+  .stat-label{font-size:12px;color:var(--gray-500);font-weight:500}
+  .stat-value{font-size:24px;font-weight:700;color:var(--gray-900);margin-top:4px;letter-spacing:-0.02em}
+  .stat-change{font-size:11px;font-weight:500;margin-top:4px}
+  .stat-up{color:var(--success-600)}
+  .stat-down{color:var(--error-600)}
+
+  /* PGD workflow */
+  .pgd-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pgd-flow-step{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)}
+  .pgd-flow-step.active{background:var(--primary-100);color:var(--primary-700);font-weight:500}
+  .pgd-flow-step.done{background:var(--success-50);color:var(--success-700)}
+  .pgd-flow-arrow{color:var(--gray-300);font-size:14px}
+
+  /* Monitoring */
+  .health-indicator{display:flex;align-items:center;gap:6px;font-size:13px}
+  .health-dot{width:10px;height:10px;border-radius:50%}
+  .health-dot.green{background:var(--success-500)}
+  .health-dot.amber{background:var(--warning-500)}
+  .health-dot.red{background:var(--error-500)}
+
+  /* Audit log */
+  .audit-entry{padding:10px 16px;border-bottom:1px solid var(--gray-100);display:flex;align-items:start;gap:12px;font-size:13px}
+  .audit-time{font-size:11px;color:var(--gray-400);white-space:nowrap;flex-shrink:0;width:60px;padding-top:2px}
+  .audit-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+  .audit-text{color:var(--gray-700);line-height:1.4}
+  .audit-text strong{color:var(--gray-900);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- ====== SCREEN 1: SUPER ADMIN DASHBOARD ====== -->
+<div class="screen-label">
+  Screen 1: Super Admin — Platform Dashboard
+  <span class="badge">Role: Platform Super-Admin</span>
+  <span class="badge">Internal Only</span>
+</div>
+<div class="screen-section">
+  <div class="admin-layout">
+    <!-- Dark Sidebar -->
+    <div class="admin-sidebar">
+      <div class="sa-brand">
+        <div class="sa-brand-icon">P1S</div>
+        <div>
+          <div class="sa-brand-name">Pharmacy One Stop</div>
+          <div class="sa-brand-sub">Platform Admin</div>
+        </div>
+      </div>
+
+      <div class="sa-section">
+        <div class="sa-section-label">Overview</div>
+        <div class="sa-item active">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Tenants
+          <span class="sa-badge">148</span>
+        </div>
+      </div>
+
+      <div class="sa-section">
+        <div class="sa-section-label">Clinical</div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          PGD Library
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          DSP Register
+        </div>
+      </div>
+
+      <div class="sa-section">
+        <div class="sa-section-label">Platform</div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+          Tiers & Features
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9"/></svg>
+          Domains & DNS
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Monitoring
+        </div>
+      </div>
+
+      <div class="sa-section">
+        <div class="sa-section-label">Operations</div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Support
+          <span class="sa-badge">3</span>
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          Audit Logs
+        </div>
+        <div class="sa-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          Billing Ops
+        </div>
+      </div>
+
+      <div style="margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--primary-500);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px">HZ</div>
+        <div>
+          <div style="font-size:12px;font-weight:500;color:white">Hamza (Super Admin)</div>
+          <div style="font-size:10px;color:var(--gray-500)">TSP Platform</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="admin-main">
+      <div class="admin-topbar">
+        <h2 style="font-size:17px;font-weight:600">Platform Dashboard</h2>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="health-indicator"><div class="health-dot green"></div>All Systems Operational</div>
+          <button class="btn btn-primary" style="font-size:12px">+ Onboard Tenant</button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+        <!-- Platform Stats -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px">
+          <div class="stat-card">
+            <div class="stat-label">Total Tenants</div>
+            <div class="stat-value">148</div>
+            <div class="stat-change stat-up">+12 this month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Storefronts</div>
+            <div class="stat-value">132</div>
+            <div class="stat-change" style="color:var(--gray-500)">89% activation</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Monthly Revenue</div>
+            <div class="stat-value">&pound;42.8k</div>
+            <div class="stat-change stat-up">+18% MoM</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Online Orders (Today)</div>
+            <div class="stat-value">312</div>
+            <div class="stat-change stat-up">+22% vs Thu avg</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Prescriber SLA</div>
+            <div class="stat-value" style="color:var(--success-600)">2.1h</div>
+            <div class="stat-change" style="color:var(--gray-500)">Target: 4h</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+          <!-- Tenant Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Tenants</h3>
+              <div style="display:flex;gap:8px">
+                <input style="padding:6px 10px;border:1px solid var(--gray-300);border-radius:var(--radius-md);font-size:12px;font-family:inherit;width:200px" placeholder="Search tenants...">
+                <button class="btn btn-outline" style="font-size:12px">View All</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Pharmacy</th><th>Tier</th><th>Branches</th><th>DSP</th><th>Status</th><th>MRR</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:28px;height:28px;border-radius:6px;background:var(--primary-100);color:var(--primary-700);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">H</div>
+                      <div>
+                        <div style="font-weight:500;font-size:13px">High Street Pharmacy</div>
+                        <div style="font-size:11px;color:var(--gray-400)">Manchester</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-violet">Enterprise</span></td>
+                  <td>3</td>
+                  <td><span class="badge badge-success">Verified</span></td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td style="font-weight:500">&pound;399</td>
+                  <td><button class="btn btn-ghost" style="font-size:11px">Manage</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:28px;height:28px;border-radius:6px;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">C</div>
+                      <div>
+                        <div style="font-weight:500;font-size:13px">CareFirst Pharmacy</div>
+                        <div style="font-size:11px;color:var(--gray-400)">London</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-primary">Professional</span></td>
+                  <td>1</td>
+                  <td><span class="badge badge-warning">Pending</span></td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td style="font-weight:500">&pound;199</td>
+                  <td><button class="btn btn-ghost" style="font-size:11px">Manage</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:28px;height:28px;border-radius:6px;background:#fef3c7;color:#92400e;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">W</div>
+                      <div>
+                        <div style="font-weight:500;font-size:13px">Wellness Pharmacy</div>
+                        <div style="font-size:11px;color:var(--gray-400)">Birmingham</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-neutral">Starter</span></td>
+                  <td>1</td>
+                  <td><span class="badge badge-neutral">N/A</span></td>
+                  <td><span class="badge badge-warning">Onboarding</span></td>
+                  <td style="font-weight:500">&pound;99</td>
+                  <td><button class="btn btn-ghost" style="font-size:11px">Manage</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="width:28px;height:28px;border-radius:6px;background:#ffe4e6;color:#9f1239;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px">M</div>
+                      <div>
+                        <div style="font-weight:500;font-size:13px">MediQuick</div>
+                        <div style="font-size:11px;color:var(--gray-400)">Leeds</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-primary">Professional</span></td>
+                  <td>2</td>
+                  <td><span class="badge badge-success">Verified</span></td>
+                  <td><span class="badge badge-success">Active</span></td>
+                  <td style="font-weight:500">&pound;199</td>
+                  <td><button class="btn btn-ghost" style="font-size:11px">Manage</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- System Health + Audit -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <!-- System Health -->
+            <div class="card">
+              <div class="card-header"><h3>System Health</h3></div>
+              <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot green"></div>API Uptime</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--success-600)">99.98%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot green"></div>Stripe Payments</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--success-600)">99.9%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot green"></div>SMS Delivery</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--success-600)">98.2%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot amber"></div>IDV Provider</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--warning-600)">Degraded</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot green"></div>Courier APIs</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--success-600)">OK</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div class="health-indicator"><div class="health-dot green"></div>SSL Certificates</div>
+                  <span style="font-size:12px;font-weight:500;color:var(--success-600)">0 expiring</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Audit -->
+            <div class="card" style="flex:1">
+              <div class="card-header"><h3>Recent Activity</h3></div>
+              <div>
+                <div class="audit-entry">
+                  <div class="audit-time">10:42</div>
+                  <div class="audit-icon" style="background:var(--success-50);color:var(--success-600)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+                  </div>
+                  <div class="audit-text"><strong>PGD Published:</strong> Weight Management v3.2 approved by Clinical Lead</div>
+                </div>
+                <div class="audit-entry">
+                  <div class="audit-time">10:15</div>
+                  <div class="audit-icon" style="background:var(--info-50);color:var(--info-600)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 11.293a1 1 0 101.414 1.414l2-2A1 1 0 0011 10V7z"/></svg>
+                  </div>
+                  <div class="audit-text"><strong>Tenant Onboarded:</strong> Wellness Pharmacy (Starter, Birmingham)</div>
+                </div>
+                <div class="audit-entry">
+                  <div class="audit-time">09:48</div>
+                  <div class="audit-icon" style="background:var(--warning-50);color:var(--warning-600)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92z"/></svg>
+                  </div>
+                  <div class="audit-text"><strong>DSP Verification Pending:</strong> CareFirst Pharmacy uploaded evidence — awaiting review</div>
+                </div>
+                <div class="audit-entry">
+                  <div class="audit-time">09:30</div>
+                  <div class="audit-icon" style="background:var(--violet-50);color:var(--violet-600)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"/></svg>
+                  </div>
+                  <div class="audit-text"><strong>Impersonation:</strong> Admin HZ started support session for CareFirst (expires in 30m)</div>
+                </div>
+                <div class="audit-entry">
+                  <div class="audit-time">09:10</div>
+                  <div class="audit-icon" style="background:var(--error-50);color:var(--error-600)">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+                  </div>
+                  <div class="audit-text"><strong>Refund Approved:</strong> &pound;208 to James Davies (#ORD-2841) — clinical rejection (4-eyes: Admin MK)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PGD Publishing Workflow -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h3>PGD Publishing Queue</h3>
+            <button class="btn btn-primary" style="font-size:12px">+ Draft New PGD</button>
+          </div>
+          <table>
+            <thead>
+              <tr><th>PGD</th><th>Version</th><th>Therapy Area</th><th>Status</th><th>Workflow</th><th>Author</th><th>Review Date</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500">Weight Management</td>
+                <td>v3.2</td>
+                <td>Weight Loss</td>
+                <td><span class="badge badge-success">Published</span></td>
+                <td>
+                  <div class="pgd-flow">
+                    <span class="pgd-flow-step done">Author</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step done">Reviewer</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step done">Clinical Lead</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step done">Published</span>
+                  </div>
+                </td>
+                <td>Dr. A. Khan</td>
+                <td>15 Sep 2026</td>
+                <td><button class="btn btn-ghost" style="font-size:11px">View</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">Sexual Health - Chlamydia</td>
+                <td>v2.1</td>
+                <td>Sexual Health</td>
+                <td><span class="badge badge-warning">In Review</span></td>
+                <td>
+                  <div class="pgd-flow">
+                    <span class="pgd-flow-step done">Author</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step active">Reviewer</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step">Clinical Lead</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step">Publish</span>
+                  </div>
+                </td>
+                <td>Dr. S. Patel</td>
+                <td>01 Jul 2026</td>
+                <td><button class="btn btn-outline" style="font-size:11px">Review</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">Pharmacy First - UTI</td>
+                <td>v1.0</td>
+                <td>General Health</td>
+                <td><span class="badge badge-neutral">Draft</span></td>
+                <td>
+                  <div class="pgd-flow">
+                    <span class="pgd-flow-step active">Author</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step">Reviewer</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step">Clinical Lead</span>
+                    <span class="pgd-flow-arrow">&rarr;</span>
+                    <span class="pgd-flow-step">Publish</span>
+                  </div>
+                </td>
+                <td>Dr. M. Lee</td>
+                <td>-</td>
+                <td><button class="btn btn-ghost" style="font-size:11px">Edit</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- DSP Register -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h3>DSP Licence Register</h3>
+            <span class="badge badge-info">42 DSP-Enabled Tenants</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Pharmacy</th><th>GPhC DSP No.</th><th>Verified</th><th>Online POM Active</th><th>Next Review</th><th>MHRA Logo</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500">High Street Pharmacy</td>
+                <td>DSP-9876543</td>
+                <td><span class="badge badge-success">Verified</span></td>
+                <td><span class="badge badge-success">Yes (12 services)</span></td>
+                <td>24 Oct 2026</td>
+                <td><span style="color:var(--success-600);font-size:12px">Injected</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px">Details</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">CareFirst Pharmacy</td>
+                <td>DSP-1234567</td>
+                <td><span class="badge badge-warning">Pending</span></td>
+                <td><span class="badge badge-neutral">Blocked</span></td>
+                <td>-</td>
+                <td><span style="color:var(--gray-400);font-size:12px">Pending</span></td>
+                <td><button class="btn btn-primary" style="font-size:11px">Verify</button></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500">MediQuick</td>
+                <td>DSP-5555555</td>
+                <td><span class="badge badge-success">Verified</span></td>
+                <td><span class="badge badge-success">Yes (8 services)</span></td>
+                <td>15 Jan 2027</td>
+                <td><span style="color:var(--success-600);font-size:12px">Injected</span></td>
+                <td><button class="btn btn-ghost" style="font-size:11px">Details</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div style="padding:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+  <a href="design-system.html" style="padding:10px 20px;background:white;color:#374151;border:1px solid #d1d5db;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">&larr; Design System</a>
+  <a href="01-patient-storefront.html" style="padding:10px 20px;background:white;color:#374151;border:1px solid #d1d5db;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Patient Storefront</a>
+  <a href="02-pharmacy-admin.html" style="padding:10px 20px;background:white;color:#374151;border:1px solid #d1d5db;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Pharmacy Admin</a>
+  <a href="03-clinician-dashboard.html" style="padding:10px 20px;background:white;color:#374151;border:1px solid #d1d5db;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Clinician Dashboard</a>
+</div>
+
+</body>
+</html>

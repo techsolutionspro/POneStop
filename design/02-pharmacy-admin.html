@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy Admin Console - Pharmacy One Stop Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-50:#f0fdfa;--primary-100:#ccfbf1;--primary-200:#99f6e4;--primary-300:#5eead4;
+    --primary-400:#2dd4bf;--primary-500:#14b8a6;--primary-600:#0d9488;--primary-700:#0f766e;
+    --primary-800:#115e59;--primary-900:#134e4a;
+    --gray-25:#fcfcfd;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+    --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;
+    --success-50:#f0fdf4;--success-500:#22c55e;--success-600:#16a34a;--success-700:#15803d;
+    --warning-50:#fffbeb;--warning-500:#f59e0b;--warning-600:#d97706;
+    --error-50:#fef2f2;--error-500:#ef4444;--error-600:#dc2626;
+    --info-50:#eff6ff;--info-500:#3b82f6;--info-600:#2563eb;
+    --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-full:9999px;
+    --shadow-xs:0 1px 2px rgba(0,0,0,0.05);--shadow-sm:0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md:0 4px 6px -1px rgba(0,0,0,0.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;color:var(--gray-900);background:var(--gray-50);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+  .screen-label{background:var(--gray-900);color:white;padding:12px 24px;font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+  .screen-label .badge{background:rgba(255,255,255,0.15);border-radius:var(--radius-full);padding:3px 10px;font-size:11px;text-transform:none;letter-spacing:0}
+  .screen-section{border:2px solid var(--gray-200);border-radius:var(--radius-xl);margin:32px 24px;overflow:hidden;background:var(--gray-50)}
+
+  /* Admin Layout */
+  .admin-layout{display:flex;min-height:800px}
+  .admin-sidebar{width:260px;background:white;border-right:1px solid var(--gray-200);display:flex;flex-direction:column;flex-shrink:0}
+  .admin-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .admin-topbar{height:60px;background:white;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+  .admin-content{flex:1;padding:24px;overflow-y:auto}
+
+  /* Sidebar */
+  .sb-brand{padding:20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:12px}
+  .sb-brand-icon{width:36px;height:36px;border-radius:var(--radius-md);background:var(--primary-600);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px}
+  .sb-brand-name{font-size:14px;font-weight:600}
+  .sb-brand-plan{font-size:11px;color:var(--gray-400)}
+  .sb-section{padding:12px}
+  .sb-section-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-400);padding:4px 12px;margin-bottom:4px}
+  .sb-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-md);font-size:13px;color:var(--gray-600);cursor:pointer;transition:all 0.15s;position:relative}
+  .sb-item:hover{background:var(--gray-100);color:var(--gray-900)}
+  .sb-item.active{background:var(--primary-50);color:var(--primary-700);font-weight:500}
+  .sb-item svg{width:18px;height:18px;opacity:0.65;flex-shrink:0}
+  .sb-item.active svg{opacity:1}
+  .sb-badge{margin-left:auto;background:var(--error-500);color:white;font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-full);min-width:18px;text-align:center}
+  .sb-badge.warn{background:var(--warning-500)}
+  .sb-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--gray-100);display:flex;align-items:center;gap:10px}
+  .sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-100);color:var(--primary-700);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+
+  /* Topbar */
+  .tb-search{display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-md);padding:7px 14px;width:320px}
+  .tb-search input{border:none;background:none;outline:none;font-size:13px;font-family:inherit;width:100%;color:var(--gray-700)}
+  .tb-search svg{width:16px;height:16px;color:var(--gray-400);flex-shrink:0}
+  .tb-actions{display:flex;align-items:center;gap:12px}
+  .tb-icon-btn{width:36px;height:36px;border-radius:var(--radius-md);border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray-500);position:relative;transition:all 0.15s}
+  .tb-icon-btn:hover{background:var(--gray-100);color:var(--gray-700)}
+  .tb-notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--error-500);border:2px solid white}
+
+  /* Stat Cards */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .stat-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-xs)}
+  .stat-label{font-size:13px;color:var(--gray-500);font-weight:500}
+  .stat-value{font-size:26px;font-weight:700;color:var(--gray-900);margin-top:4px;letter-spacing:-0.02em}
+  .stat-change{font-size:12px;font-weight:500;margin-top:4px;display:flex;align-items:center;gap:4px}
+  .stat-up{color:var(--success-600)}
+  .stat-down{color:var(--error-600)}
+
+  /* Cards & Tables */
+  .card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:var(--shadow-xs);overflow:hidden}
+  .card-header{padding:16px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between}
+  .card-header h3{font-size:15px;font-weight:600}
+  .card-body{padding:0}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;padding:10px 16px;font-weight:500;font-size:11px;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid var(--gray-200);background:var(--gray-50)}
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)}
+  tbody tr:hover{background:var(--gray-50)}
+
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:var(--radius-full);font-size:11px;font-weight:500}
+  .badge-success{background:var(--success-50);color:var(--success-700)}
+  .badge-warning{background:var(--warning-50);color:var(--warning-600)}
+  .badge-error{background:var(--error-50);color:#b91c1c}
+  .badge-info{background:var(--info-50);color:var(--info-600)}
+  .badge-neutral{background:var(--gray-100);color:var(--gray-600)}
+  .badge-primary{background:var(--primary-50);color:var(--primary-700)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit}
+  .btn-primary{background:var(--primary-600);color:white}
+  .btn-primary:hover{background:var(--primary-700)}
+  .btn-outline{background:white;color:var(--gray-700);border:1px solid var(--gray-300)}
+  .btn-outline:hover{background:var(--gray-50)}
+  .btn-ghost{background:none;color:var(--gray-600);padding:6px 10px}
+  .btn-ghost:hover{background:var(--gray-100)}
+  .btn-success{background:var(--success-600);color:white}
+  .btn-danger{background:var(--error-600);color:white}
+
+  .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+  .avatar-teal{background:var(--primary-100);color:var(--primary-700)}
+  .avatar-indigo{background:#e0e7ff;color:#4338ca}
+  .avatar-amber{background:#fef3c7;color:#92400e}
+
+  /* Calendar */
+  .cal-grid{display:grid;grid-template-columns:60px repeat(5,1fr);font-size:12px}
+  .cal-header{padding:8px;text-align:center;font-weight:600;color:var(--gray-600);background:var(--gray-50);border-bottom:1px solid var(--gray-200)}
+  .cal-time{padding:8px 4px;text-align:right;color:var(--gray-400);font-size:11px;border-right:1px solid var(--gray-200);height:60px}
+  .cal-cell{border-right:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);min-height:60px;padding:2px;position:relative}
+  .cal-event{background:var(--primary-50);border-left:3px solid var(--primary-500);padding:4px 6px;border-radius:0 4px 4px 0;font-size:11px;margin-bottom:2px;cursor:pointer}
+  .cal-event:hover{background:var(--primary-100)}
+  .cal-event.warning{background:var(--warning-50);border-color:var(--warning-500)}
+  .cal-event.info{background:var(--info-50);border-color:var(--info-500)}
+
+  /* Alert Banner */
+  .alert-banner{padding:10px 20px;display:flex;align-items:center;gap:10px;font-size:13px}
+  .alert-warning{background:var(--warning-50);color:#92400e;border-bottom:1px solid #fde68a}
+  .alert-warning svg{flex-shrink:0;width:18px;height:18px}
+
+  /* Grid helpers */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+  /* Quick action cards */
+  .qa-card{background:white;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.15s}
+  .qa-card:hover{box-shadow:var(--shadow-md);border-color:var(--primary-300)}
+  .qa-icon{width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .qa-card h4{font-size:14px;font-weight:600;margin-bottom:2px}
+  .qa-card p{font-size:12px;color:var(--gray-500)}
+
+  /* Chart placeholder */
+  .chart-placeholder{height:200px;background:linear-gradient(180deg,var(--primary-50) 0%,white 100%);border-radius:var(--radius-md);display:flex;align-items:flex-end;justify-content:center;padding:16px;gap:8px}
+  .chart-bar{width:32px;border-radius:4px 4px 0 0;background:var(--primary-400);transition:height 0.3s}
+
+  /* Onboarding wizard */
+  .wizard-steps{display:flex;gap:0;margin-bottom:32px}
+  .wiz-step{flex:1;text-align:center;position:relative;padding:16px 8px 0}
+  .wiz-step::before{content:'';position:absolute;top:28px;left:0;right:0;height:2px;background:var(--gray-200)}
+  .wiz-step:first-child::before{left:50%}
+  .wiz-step:last-child::before{right:50%}
+  .wiz-step.done::before,.wiz-step.active::before{background:var(--primary-500)}
+  .wiz-dot{width:24px;height:24px;border-radius:50%;background:white;border:2px solid var(--gray-300);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;position:relative;z-index:1}
+  .wiz-step.done .wiz-dot{background:var(--primary-600);border-color:var(--primary-600);color:white}
+  .wiz-step.active .wiz-dot{background:var(--primary-600);border-color:var(--primary-600);color:white}
+  .wiz-label{font-size:11px;color:var(--gray-400);margin-top:8px;font-weight:500}
+  .wiz-step.done .wiz-label,.wiz-step.active .wiz-label{color:var(--primary-700)}
+</style>
+</head>
+<body>
+
+<!-- ====== SCREEN 1: DASHBOARD ====== -->
+<div class="screen-label">
+  Screen 1: Pharmacy Admin — Dashboard
+  <span class="badge">Role: Pharmacy Owner</span>
+</div>
+<div class="screen-section">
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <div class="sb-brand">
+        <div class="sb-brand-icon">H</div>
+        <div>
+          <div class="sb-brand-name">High Street Pharmacy</div>
+          <div class="sb-brand-plan">Professional Plan</div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-label">Main</div>
+        <div class="sb-item active">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Services
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Bookings
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          Online Orders
+          <span class="sb-badge">3</span>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-label">Clinical</div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Prescriber Queue
+          <span class="sb-badge warn">5</span>
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Dispensing
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          Dispatch
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Patients
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-label">Business</div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Reports
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+          Marketing
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          Billing
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-section-label">Settings</div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
+          Domain & Website
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Team
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+          Branches
+        </div>
+        <div class="sb-item">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          Settings
+        </div>
+      </div>
+
+      <div class="sb-footer">
+        <div class="sb-avatar">DA</div>
+        <div>
+          <div style="font-size:13px;font-weight:500">Dr. Amir Hussain</div>
+          <div style="font-size:11px;color:var(--gray-400)">Owner</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      <!-- Alert Banner -->
+      <div class="alert-banner alert-warning">
+        <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92z"/></svg>
+        <strong>Cold-chain dispatch cut-off at 14:00 today.</strong> 2 orders require dispatch within 3 hours.
+        <button class="btn btn-outline" style="margin-left:auto;font-size:12px;padding:4px 10px">View Orders</button>
+      </div>
+
+      <!-- Topbar -->
+      <div class="admin-topbar">
+        <div class="tb-search">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input placeholder="Search patients, orders, bookings...">
+        </div>
+        <div class="tb-actions">
+          <div style="font-size:12px;color:var(--gray-500);padding:4px 10px;background:var(--gray-50);border-radius:var(--radius-md)">Manchester Central</div>
+          <button class="tb-icon-btn">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <div class="tb-notif-dot"></div>
+          </button>
+          <button class="btn btn-primary" style="font-size:13px">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            New Booking
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="admin-content">
+        <!-- Welcome -->
+        <div style="margin-bottom:24px">
+          <h1 style="font-size:24px;font-weight:700;letter-spacing:-0.02em">Good morning, Dr. Hussain</h1>
+          <p style="font-size:14px;color:var(--gray-500);margin-top:4px">Thursday 24 April 2026 | Manchester Central Branch</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Today's Bookings</div>
+            <div class="stat-value">24</div>
+            <div class="stat-change stat-up">+12% vs last Thu</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Online Orders</div>
+            <div class="stat-value">18</div>
+            <div class="stat-change stat-up">+8% vs last Thu</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Revenue Today</div>
+            <div class="stat-value">&pound;3,240</div>
+            <div class="stat-change stat-up">+15% vs last Thu</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Awaiting Review</div>
+            <div class="stat-value" style="color:var(--warning-600)">5</div>
+            <div class="stat-change" style="color:var(--gray-500)">Avg. 1.8h response</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+          <div class="qa-card">
+            <div class="qa-icon" style="background:var(--primary-50);color:var(--primary-600)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div><h4>Add Booking</h4><p>Walk-in or phone</p></div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-icon" style="background:var(--warning-50);color:var(--warning-600)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <div><h4>Review Queue</h4><p>5 orders waiting</p></div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-icon" style="background:var(--info-50);color:var(--info-600)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            </div>
+            <div><h4>Dispatch</h4><p>3 ready to ship</p></div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-icon" style="background:var(--success-50);color:var(--success-600)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg>
+            </div>
+            <div><h4>Reports</h4><p>Weekly summary</p></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Today's Bookings -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Today's Bookings</h3>
+              <button class="btn btn-ghost" style="font-size:12px">View All &rarr;</button>
+            </div>
+            <div class="card-body">
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>Patient</th><th>Service</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-weight:500">09:00</td>
+                    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-teal" style="width:28px;height:28px;font-size:10px">EM</div>Emma Mitchell</div></td>
+                    <td>Flu Jab</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500">09:30</td>
+                    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-indigo" style="width:28px;height:28px;font-size:10px">JD</div>James Davies</div></td>
+                    <td>Weight Loss</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500">10:00</td>
+                    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-amber" style="width:28px;height:28px;font-size:10px">SK</div>Sarah Khan</div></td>
+                    <td>Travel Health</td>
+                    <td><span class="badge badge-info">In Progress</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500">10:30</td>
+                    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-teal" style="width:28px;height:28px;font-size:10px">TP</div>Tom Price</div></td>
+                    <td>Flu Jab</td>
+                    <td><span class="badge badge-neutral">Checked In</span></td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:500">11:00</td>
+                    <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-indigo" style="width:28px;height:28px;font-size:10px">LW</div>Laura Wilson</div></td>
+                    <td>Weight Loss</td>
+                    <td><span class="badge badge-warning">Upcoming</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Revenue Chart -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Revenue (Last 7 Days)</h3>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">In-Branch</button>
+                <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px;background:var(--primary-50);color:var(--primary-700)">Online</button>
+                <button class="btn btn-ghost" style="font-size:11px;padding:4px 8px">All</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:20px">
+              <div class="chart-placeholder">
+                <div class="chart-bar" style="height:60%"></div>
+                <div class="chart-bar" style="height:45%"></div>
+                <div class="chart-bar" style="height:75%"></div>
+                <div class="chart-bar" style="height:55%"></div>
+                <div class="chart-bar" style="height:85%"></div>
+                <div class="chart-bar" style="height:65%"></div>
+                <div class="chart-bar" style="height:90%;background:var(--primary-600)"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--gray-400)">
+                <span>Fri</span><span>Sat</span><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span style="color:var(--primary-600);font-weight:600">Thu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Online Orders Table -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-header">
+            <h3>Recent Online Orders</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline" style="font-size:12px">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                Filters
+              </button>
+              <button class="btn btn-primary" style="font-size:12px">View All Orders</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <table>
+              <thead>
+                <tr><th>Order</th><th>Patient</th><th>Service</th><th>Product</th><th>Status</th><th>Amount</th><th>SLA</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:500">#ORD-2847</td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-teal" style="width:24px;height:24px;font-size:9px">JD</div>James Davies</div></td>
+                  <td>Weight Loss</td>
+                  <td>Wegovy 0.25mg</td>
+                  <td><span class="badge badge-warning">Awaiting Review</span></td>
+                  <td>&pound;208</td>
+                  <td><span style="color:var(--warning-600);font-size:12px;font-weight:500">2h 15m</span></td>
+                  <td><button class="btn btn-primary" style="font-size:11px;padding:4px 10px">Review</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500">#ORD-2846</td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-indigo" style="width:24px;height:24px;font-size:9px">SP</div>Sarah Parker</div></td>
+                  <td>Sexual Health</td>
+                  <td>Chlamydia Tx</td>
+                  <td><span class="badge badge-success">Approved</span></td>
+                  <td>&pound;35</td>
+                  <td><span style="font-size:12px;color:var(--gray-400)">-</span></td>
+                  <td><button class="btn btn-outline" style="font-size:11px;padding:4px 10px">Dispense</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500">#ORD-2845</td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar avatar-amber" style="width:24px;height:24px;font-size:9px">MK</div>Mohammed Khan</div></td>
+                  <td>Weight Loss</td>
+                  <td>Mounjaro 2.5mg</td>
+                  <td><span class="badge badge-primary">Dispatched</span></td>
+                  <td>&pound;189</td>
+                  <td><span style="font-size:12px;color:var(--gray-400)">-</span></td>
+                  <td><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">Track</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 2: ONBOARDING WIZARD ====== -->
+<div class="screen-label">
+  Screen 2: Onboarding Wizard — Step 3: Services
+  <span class="badge">First-Time Setup</span>
+  <span class="badge">Under 45 min</span>
+</div>
+<div class="screen-section">
+  <div style="max-width:800px;margin:0 auto;padding:48px 32px">
+    <!-- Progress -->
+    <div style="text-align:center;margin-bottom:8px">
+      <div style="font-size:12px;color:var(--gray-400);font-weight:500">STEP 3 OF 7</div>
+    </div>
+    <div class="wizard-steps">
+      <div class="wiz-step done"><div class="wiz-dot">&#10003;</div><div class="wiz-label">Branding</div></div>
+      <div class="wiz-step done"><div class="wiz-dot">&#10003;</div><div class="wiz-label">Branches</div></div>
+      <div class="wiz-step active"><div class="wiz-dot">3</div><div class="wiz-label">Services</div></div>
+      <div class="wiz-step"><div class="wiz-dot">4</div><div class="wiz-label">Fulfilment</div></div>
+      <div class="wiz-step"><div class="wiz-dot">5</div><div class="wiz-label">Payments</div></div>
+      <div class="wiz-step"><div class="wiz-dot">6</div><div class="wiz-label">Team</div></div>
+      <div class="wiz-step"><div class="wiz-dot">7</div><div class="wiz-label">Go Live</div></div>
+    </div>
+
+    <h2 style="font-size:24px;font-weight:700;text-align:center;margin-bottom:8px">Choose Your Services</h2>
+    <p style="font-size:14px;color:var(--gray-500);text-align:center;margin-bottom:32px;max-width:480px;margin-left:auto;margin-right:auto">Select the clinical services you'd like to offer. You can add more later. Each service comes with ready-made PGDs, questionnaires, and consent flows.</p>
+
+    <!-- Service Selection Cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="border:2px solid var(--primary-500);background:var(--primary-50);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer">
+        <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--primary-800)">Weight Management</div>
+          <div style="font-size:12px;color:var(--primary-600);margin-top:2px">GLP-1 injectables (Wegovy, Mounjaro) + oral treatments</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:white;color:var(--primary-700)">In-Branch</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:white;color:var(--primary-700)">Online</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:2px solid var(--primary-500);background:var(--primary-50);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer">
+        <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--primary-800)">Travel Health</div>
+          <div style="font-size:12px;color:var(--primary-600);margin-top:2px">Vaccinations, antimalarials, travel advice</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:white;color:var(--primary-700)">In-Branch Only</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:2px solid var(--primary-500);background:var(--primary-50);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer">
+        <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--primary-800)">Flu Vaccination</div>
+          <div style="font-size:12px;color:var(--primary-600);margin-top:2px">Seasonal flu jab, walk-in and bookable</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:white;color:var(--primary-700)">In-Branch</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:white;color:var(--primary-700)">Walk-In</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--primary-300)'" onmouseout="this.style.borderColor='var(--gray-200)'">
+        <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600">Sexual Health</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:2px">STI testing, ED, contraception</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)">Online</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)">Discreet</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer;transition:all 0.15s">
+        <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600">Women's Health</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Contraception, HRT, UTI treatment</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)">In-Branch</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)">Online</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px;display:flex;gap:12px;cursor:pointer;transition:all 0.15s">
+        <input type="checkbox" style="width:20px;height:20px;accent-color:var(--primary-600);margin-top:2px;flex-shrink:0">
+        <div>
+          <div style="font-size:14px;font-weight:600">Skincare</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Acne, rosacea, anti-ageing prescriptions</div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-full);background:var(--gray-100);color:var(--gray-600)">Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--gray-200)">
+      <button class="btn btn-outline">&larr; Back to Branches</button>
+      <div style="display:flex;gap:12px;align-items:center">
+        <span style="font-size:13px;color:var(--gray-400)">3 services selected</span>
+        <button class="btn btn-primary">Continue to Fulfilment &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 3: BOOKINGS CALENDAR ====== -->
+<div class="screen-label">
+  Screen 3: Bookings Calendar View
+  <span class="badge">Unified Calendar</span>
+</div>
+<div class="screen-section">
+  <div class="admin-layout" style="min-height:600px">
+    <div class="admin-sidebar" style="width:200px">
+      <div style="padding:16px;font-size:14px;font-weight:600">Bookings</div>
+      <div style="padding:0 12px">
+        <div class="sb-item active" style="font-size:12px">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+          Calendar
+        </div>
+        <div class="sb-item" style="font-size:12px">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          List View
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px">Filter by Service</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-600);margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" checked style="accent-color:var(--primary-600)"> Weight Loss
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-600);margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" checked style="accent-color:#3b82f6"> Travel Health
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-600);margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" checked style="accent-color:#f59e0b"> Flu Jab
+        </label>
+      </div>
+    </div>
+    <div class="admin-main">
+      <div style="padding:16px 24px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;background:white">
+        <div style="display:flex;align-items:center;gap:16px">
+          <button style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--gray-400)">&larr;</button>
+          <h3 style="font-size:16px;font-weight:600">Thursday 24 April 2026</h3>
+          <button style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--gray-400)">&rarr;</button>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Day</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px;background:var(--primary-50);color:var(--primary-700)">Week</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Month</button>
+        </div>
+      </div>
+      <div style="padding:0;overflow:auto;background:white">
+        <div class="cal-grid">
+          <div class="cal-header"></div>
+          <div class="cal-header">Mon 20</div>
+          <div class="cal-header">Tue 21</div>
+          <div class="cal-header">Wed 22</div>
+          <div class="cal-header" style="background:var(--primary-50);color:var(--primary-700)">Thu 24</div>
+          <div class="cal-header">Fri 25</div>
+
+          <div class="cal-time">09:00</div>
+          <div class="cal-cell"><div class="cal-event">Flu - E. Mitchell</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event info">Travel - A. Patel</div></div>
+          <div class="cal-cell"><div class="cal-event">Flu - E. Mitchell</div></div>
+          <div class="cal-cell"></div>
+
+          <div class="cal-time">09:30</div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event warning">WL - R. Brown</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event warning">WL - J. Davies</div></div>
+          <div class="cal-cell"><div class="cal-event info">Travel - K. Lee</div></div>
+
+          <div class="cal-time">10:00</div>
+          <div class="cal-cell"><div class="cal-event info">Travel - M. Ali</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event">Flu - T. Jones</div></div>
+          <div class="cal-cell"><div class="cal-event info">Travel - S. Khan</div></div>
+          <div class="cal-cell"></div>
+
+          <div class="cal-time">10:30</div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event">Flu - L. Smith</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event">Flu - T. Price</div></div>
+          <div class="cal-cell"><div class="cal-event warning">WL - D. Evans</div></div>
+
+          <div class="cal-time">11:00</div>
+          <div class="cal-cell"><div class="cal-event warning">WL - P. Clark</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="cal-event warning">WL - S. Taylor</div></div>
+          <div class="cal-cell"><div class="cal-event warning">WL - L. Wilson</div></div>
+          <div class="cal-cell"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div style="padding:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+  <a href="design-system.html" style="padding:10px 20px;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">&larr; Design System</a>
+  <a href="01-patient-storefront.html" style="padding:10px 20px;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Patient Storefront</a>
+  <a href="03-clinician-dashboard.html" style="padding:10px 20px;background:#0d9488;color:white;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Clinician Dashboard &rarr;</a>
+  <a href="04-super-admin.html" style="padding:10px 20px;background:white;color:var(--gray-700);border:1px solid var(--gray-300);border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;font-family:Inter,sans-serif">Super Admin &rarr;</a>
+</div>
+
+</body>
+</html>

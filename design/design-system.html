@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy One Stop - Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Primary - Teal/Healthcare Blue-Green */
+    --primary-50: #f0fdfa;
+    --primary-100: #ccfbf1;
+    --primary-200: #99f6e4;
+    --primary-300: #5eead4;
+    --primary-400: #2dd4bf;
+    --primary-500: #14b8a6;
+    --primary-600: #0d9488;
+    --primary-700: #0f766e;
+    --primary-800: #115e59;
+    --primary-900: #134e4a;
+
+    /* Secondary - Calm Indigo */
+    --secondary-50: #eef2ff;
+    --secondary-100: #e0e7ff;
+    --secondary-200: #c7d2fe;
+    --secondary-300: #a5b4fc;
+    --secondary-400: #818cf8;
+    --secondary-500: #6366f1;
+    --secondary-600: #4f46e5;
+    --secondary-700: #4338ca;
+    --secondary-800: #3730a3;
+    --secondary-900: #312e81;
+
+    /* Neutral */
+    --gray-25: #fcfcfd;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Semantic */
+    --success-50: #f0fdf4;
+    --success-500: #22c55e;
+    --success-600: #16a34a;
+    --success-700: #15803d;
+    --warning-50: #fffbeb;
+    --warning-500: #f59e0b;
+    --warning-600: #d97706;
+    --error-50: #fef2f2;
+    --error-500: #ef4444;
+    --error-600: #dc2626;
+    --error-700: #b91c1c;
+    --info-50: #eff6ff;
+    --info-500: #3b82f6;
+    --info-600: #2563eb;
+
+    /* Spacing (8px grid) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--gray-900);
+    background: var(--gray-25);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Layout */
+  .design-page { max-width: 1200px; margin: 0 auto; padding: var(--space-8); }
+  .section { margin-bottom: var(--space-16); }
+  .section-title {
+    font-size: 28px; font-weight: 700; color: var(--gray-900);
+    margin-bottom: var(--space-2); letter-spacing: -0.02em;
+  }
+  .section-desc {
+    font-size: 15px; color: var(--gray-500); margin-bottom: var(--space-8);
+    max-width: 600px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-6); }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: var(--space-6); }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-4); }
+  .flex-row { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+
+  /* Header */
+  .ds-header {
+    background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 50%, var(--secondary-800) 100%);
+    color: white; padding: var(--space-16) var(--space-8); margin: calc(var(--space-8) * -1);
+    margin-bottom: var(--space-12); border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+  .ds-header h1 { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; }
+  .ds-header p { font-size: 18px; opacity: 0.85; margin-top: var(--space-2); max-width: 640px; }
+  .ds-header .badge {
+    display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: var(--radius-full); padding: 4px 14px; font-size: 13px; font-weight: 500;
+    margin-top: var(--space-4);
+  }
+
+  /* Nav */
+  .ds-nav {
+    display: flex; gap: var(--space-2); background: white; border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: var(--space-1); margin-bottom: var(--space-12);
+    position: sticky; top: 16px; z-index: 10; box-shadow: var(--shadow-md);
+    overflow-x: auto;
+  }
+  .ds-nav a {
+    padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    color: var(--gray-600); text-decoration: none; white-space: nowrap; transition: all 0.15s;
+  }
+  .ds-nav a:hover { background: var(--gray-50); color: var(--gray-900); }
+  .ds-nav a.active { background: var(--primary-600); color: white; }
+
+  /* Color Swatch */
+  .swatch-group { margin-bottom: var(--space-6); }
+  .swatch-group h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); margin-bottom: var(--space-3); }
+  .swatch-row { display: flex; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .swatch {
+    flex: 1; height: 72px; display: flex; align-items: flex-end; padding: 8px 10px;
+    font-size: 11px; font-weight: 500; position: relative;
+  }
+  .swatch span { opacity: 0.9; }
+  .swatch.light span { color: var(--gray-800); }
+  .swatch.dark span { color: white; }
+
+  /* Typography Demo */
+  .type-row {
+    display: flex; align-items: baseline; padding: var(--space-5) 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .type-label { width: 140px; flex-shrink: 0; font-size: 12px; color: var(--gray-400); font-weight: 500; }
+  .type-spec { width: 200px; flex-shrink: 0; font-size: 12px; color: var(--gray-400); font-family: monospace; }
+
+  /* Component Cards */
+  .comp-card {
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+    padding: var(--space-6); box-shadow: var(--shadow-xs);
+  }
+  .comp-card h4 { font-size: 14px; font-weight: 600; color: var(--gray-700); margin-bottom: var(--space-4); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s; font-family: inherit;
+    min-height: 40px;
+  }
+  .btn-sm { padding: 6px 12px; font-size: 13px; min-height: 32px; }
+  .btn-lg { padding: 12px 24px; font-size: 15px; min-height: 48px; }
+  .btn-primary { background: var(--primary-600); color: white; }
+  .btn-primary:hover { background: var(--primary-700); }
+  .btn-secondary { background: var(--secondary-600); color: white; }
+  .btn-secondary:hover { background: var(--secondary-700); }
+  .btn-outline { background: white; color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-outline:hover { background: var(--gray-50); border-color: var(--gray-400); }
+  .btn-ghost { background: transparent; color: var(--gray-600); }
+  .btn-ghost:hover { background: var(--gray-100); }
+  .btn-danger { background: var(--error-600); color: white; }
+  .btn-danger:hover { background: var(--error-700); }
+  .btn-success { background: var(--success-600); color: white; }
+  .btn-success:hover { background: var(--success-700); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Inputs */
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+  .form-label .required { color: var(--error-500); }
+  .form-input {
+    padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; color: var(--gray-900); background: white;
+    transition: all 0.15s; outline: none;
+  }
+  .form-input:focus { border-color: var(--primary-500); box-shadow: 0 0 0 3px rgba(20,184,166,0.15); }
+  .form-input.error { border-color: var(--error-500); }
+  .form-input.error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+  .form-hint { font-size: 12px; color: var(--gray-500); }
+  .form-error { font-size: 12px; color: var(--error-600); display: flex; align-items: center; gap: 4px; }
+  .form-select {
+    padding: 10px 36px 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md);
+    font-size: 14px; font-family: inherit; color: var(--gray-900); background: white;
+    appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 3.5L11.5 6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    outline: none; transition: all 0.15s;
+  }
+  .form-select:focus { border-color: var(--primary-500); box-shadow: 0 0 0 3px rgba(20,184,166,0.15); }
+
+  /* Badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px;
+    border-radius: var(--radius-full); font-size: 12px; font-weight: 500;
+  }
+  .badge-primary { background: var(--primary-50); color: var(--primary-700); }
+  .badge-success { background: var(--success-50); color: var(--success-700); }
+  .badge-warning { background: var(--warning-50); color: var(--warning-600); }
+  .badge-error { background: var(--error-50); color: var(--error-700); }
+  .badge-info { background: var(--info-50); color: var(--info-600); }
+  .badge-neutral { background: var(--gray-100); color: var(--gray-600); }
+  .badge-dot::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  }
+  .badge-dot.badge-success::before { background: var(--success-500); }
+  .badge-dot.badge-warning::before { background: var(--warning-500); }
+  .badge-dot.badge-error::before { background: var(--error-500); }
+  .badge-dot.badge-primary::before { background: var(--primary-500); }
+
+  /* Cards */
+  .card {
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs); overflow: hidden;
+  }
+  .card-padded { padding: var(--space-6); }
+  .card-header {
+    padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-body { padding: var(--space-6); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    text-align: left; padding: 10px 16px; font-weight: 500; font-size: 12px;
+    color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--gray-200); background: var(--gray-50);
+  }
+  tbody td {
+    padding: 12px 16px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700);
+  }
+  tbody tr:hover { background: var(--gray-50); }
+
+  /* Avatar */
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 600; font-size: 14px; flex-shrink: 0;
+  }
+  .avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+  .avatar-lg { width: 48px; height: 48px; font-size: 18px; }
+  .avatar-teal { background: var(--primary-100); color: var(--primary-700); }
+  .avatar-indigo { background: var(--secondary-100); color: var(--secondary-700); }
+  .avatar-amber { background: #fef3c7; color: #92400e; }
+  .avatar-rose { background: #ffe4e6; color: #9f1239; }
+
+  /* Stat Card */
+  .stat-card {
+    background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6); box-shadow: var(--shadow-xs);
+  }
+  .stat-label { font-size: 13px; color: var(--gray-500); font-weight: 500; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-900); margin-top: 2px; letter-spacing: -0.02em; }
+  .stat-change { font-size: 12px; font-weight: 500; margin-top: 4px; display: flex; align-items: center; gap: 2px; }
+  .stat-up { color: var(--success-600); }
+  .stat-down { color: var(--error-600); }
+
+  /* Progress Steps */
+  .steps { display: flex; align-items: center; gap: 0; margin-bottom: var(--space-8); }
+  .step {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500;
+    color: var(--gray-400);
+  }
+  .step.active { color: var(--primary-700); }
+  .step.completed { color: var(--primary-600); }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 600;
+    border: 2px solid var(--gray-300); background: white;
+  }
+  .step.active .step-num { border-color: var(--primary-600); background: var(--primary-600); color: white; }
+  .step.completed .step-num { border-color: var(--primary-600); background: var(--primary-600); color: white; }
+  .step-line { width: 40px; height: 2px; background: var(--gray-200); margin: 0 8px; }
+  .step-line.completed { background: var(--primary-500); }
+
+  /* Alert */
+  .alert {
+    padding: var(--space-4); border-radius: var(--radius-md); display: flex; gap: var(--space-3);
+    font-size: 14px; line-height: 1.5;
+  }
+  .alert-icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px; }
+  .alert-info { background: var(--info-50); color: #1e40af; border: 1px solid #bfdbfe; }
+  .alert-success { background: var(--success-50); color: var(--success-700); border: 1px solid #bbf7d0; }
+  .alert-warning { background: var(--warning-50); color: #92400e; border: 1px solid #fde68a; }
+  .alert-error { background: var(--error-50); color: var(--error-700); border: 1px solid #fecaca; }
+
+  /* Toggle */
+  .toggle {
+    width: 44px; height: 24px; border-radius: 12px; background: var(--gray-300);
+    position: relative; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle.on { background: var(--primary-600); }
+  .toggle::after {
+    content: ''; width: 20px; height: 20px; border-radius: 50%; background: white;
+    position: absolute; top: 2px; left: 2px; transition: transform 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--gray-200); gap: 0; }
+  .tab {
+    padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--gray-500);
+    border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--gray-700); }
+  .tab.active { color: var(--primary-700); border-bottom-color: var(--primary-600); }
+
+  /* Sidebar Item */
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: var(--radius-md); font-size: 14px; color: var(--gray-600);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sidebar-item:hover { background: var(--gray-100); color: var(--gray-900); }
+  .sidebar-item.active { background: var(--primary-50); color: var(--primary-700); font-weight: 500; }
+  .sidebar-icon { width: 20px; height: 20px; opacity: 0.7; }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Empty State */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: var(--space-16) var(--space-8); text-align: center;
+  }
+  .empty-state svg { width: 64px; height: 64px; color: var(--gray-300); margin-bottom: var(--space-4); }
+  .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+  .empty-state p { font-size: 14px; color: var(--gray-500); margin-top: 4px; max-width: 320px; }
+
+  /* Nav between design pages */
+  .page-nav {
+    display: flex; gap: var(--space-3); padding: var(--space-4) 0;
+    border-top: 1px solid var(--gray-200); margin-top: var(--space-12);
+  }
+  .page-nav a {
+    padding: 10px 20px; background: var(--primary-600); color: white;
+    border-radius: var(--radius-md); text-decoration: none; font-size: 14px; font-weight: 500;
+    transition: background 0.15s;
+  }
+  .page-nav a:hover { background: var(--primary-700); }
+  .page-nav a.outline {
+    background: white; color: var(--gray-700); border: 1px solid var(--gray-300);
+  }
+  .page-nav a.outline:hover { background: var(--gray-50); }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+    .ds-header h1 { font-size: 28px; }
+    .type-row { flex-direction: column; gap: 4px; }
+    .type-label, .type-spec { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="design-page">
+
+  <!-- Header -->
+  <div class="ds-header">
+    <h1>Pharmacy One Stop</h1>
+    <p>Design System v1.0 - UK B2B Healthcare Enablement Platform. Calm, clinical, trustworthy.</p>
+    <span class="badge">WCAG 2.1 AA Compliant</span>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="ds-nav" id="nav">
+    <a href="#colors" class="active">Colors</a>
+    <a href="#typography">Typography</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#forms">Forms</a>
+    <a href="#badges">Badges & Status</a>
+    <a href="#cards">Cards</a>
+    <a href="#tables">Tables</a>
+    <a href="#navigation">Navigation</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#steps">Steps & Progress</a>
+    <a href="#states">States</a>
+  </nav>
+
+  <!-- COLORS -->
+  <section class="section" id="colors">
+    <h2 class="section-title">Color Palette</h2>
+    <p class="section-desc">Healthcare-appropriate palette built on teal (trust, calm, clinical) with indigo accents. Semantic colors follow universal conventions.</p>
+
+    <div class="swatch-group">
+      <h4>Primary - Teal</h4>
+      <div class="swatch-row">
+        <div class="swatch light" style="background:#f0fdfa"><span>50</span></div>
+        <div class="swatch light" style="background:#ccfbf1"><span>100</span></div>
+        <div class="swatch light" style="background:#99f6e4"><span>200</span></div>
+        <div class="swatch light" style="background:#5eead4"><span>300</span></div>
+        <div class="swatch dark" style="background:#2dd4bf"><span>400</span></div>
+        <div class="swatch dark" style="background:#14b8a6"><span>500</span></div>
+        <div class="swatch dark" style="background:#0d9488"><span>600</span></div>
+        <div class="swatch dark" style="background:#0f766e"><span>700</span></div>
+        <div class="swatch dark" style="background:#115e59"><span>800</span></div>
+        <div class="swatch dark" style="background:#134e4a"><span>900</span></div>
+      </div>
+    </div>
+
+    <div class="swatch-group">
+      <h4>Secondary - Indigo</h4>
+      <div class="swatch-row">
+        <div class="swatch light" style="background:#eef2ff"><span>50</span></div>
+        <div class="swatch light" style="background:#e0e7ff"><span>100</span></div>
+        <div class="swatch light" style="background:#c7d2fe"><span>200</span></div>
+        <div class="swatch light" style="background:#a5b4fc"><span>300</span></div>
+        <div class="swatch dark" style="background:#818cf8"><span>400</span></div>
+        <div class="swatch dark" style="background:#6366f1"><span>500</span></div>
+        <div class="swatch dark" style="background:#4f46e5"><span>600</span></div>
+        <div class="swatch dark" style="background:#4338ca"><span>700</span></div>
+        <div class="swatch dark" style="background:#3730a3"><span>800</span></div>
+        <div class="swatch dark" style="background:#312e81"><span>900</span></div>
+      </div>
+    </div>
+
+    <div class="swatch-group">
+      <h4>Neutral - Gray</h4>
+      <div class="swatch-row">
+        <div class="swatch light" style="background:#f9fafb"><span>50</span></div>
+        <div class="swatch light" style="background:#f3f4f6"><span>100</span></div>
+        <div class="swatch light" style="background:#e5e7eb"><span>200</span></div>
+        <div class="swatch light" style="background:#d1d5db"><span>300</span></div>
+        <div class="swatch dark" style="background:#9ca3af"><span>400</span></div>
+        <div class="swatch dark" style="background:#6b7280"><span>500</span></div>
+        <div class="swatch dark" style="background:#4b5563"><span>600</span></div>
+        <div class="swatch dark" style="background:#374151"><span>700</span></div>
+        <div class="swatch dark" style="background:#1f2937"><span>800</span></div>
+        <div class="swatch dark" style="background:#111827"><span>900</span></div>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-top: var(--space-6);">
+      <div class="swatch-group">
+        <h4>Success</h4>
+        <div class="swatch-row">
+          <div class="swatch light" style="background:#f0fdf4; flex:2"><span>50</span></div>
+          <div class="swatch dark" style="background:#22c55e; flex:3"><span>500</span></div>
+          <div class="swatch dark" style="background:#15803d; flex:2"><span>700</span></div>
+        </div>
+      </div>
+      <div class="swatch-group">
+        <h4>Warning</h4>
+        <div class="swatch-row">
+          <div class="swatch light" style="background:#fffbeb; flex:2"><span>50</span></div>
+          <div class="swatch dark" style="background:#f59e0b; flex:3"><span>500</span></div>
+          <div class="swatch dark" style="background:#b45309; flex:2"><span>700</span></div>
+        </div>
+      </div>
+      <div class="swatch-group">
+        <h4>Error</h4>
+        <div class="swatch-row">
+          <div class="swatch light" style="background:#fef2f2; flex:2"><span>50</span></div>
+          <div class="swatch dark" style="background:#ef4444; flex:3"><span>500</span></div>
+          <div class="swatch dark" style="background:#b91c1c; flex:2"><span>700</span></div>
+        </div>
+      </div>
+      <div class="swatch-group">
+        <h4>Info</h4>
+        <div class="swatch-row">
+          <div class="swatch light" style="background:#eff6ff; flex:2"><span>50</span></div>
+          <div class="swatch dark" style="background:#3b82f6; flex:3"><span>500</span></div>
+          <div class="swatch dark" style="background:#1d4ed8; flex:2"><span>700</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TYPOGRAPHY -->
+  <section class="section" id="typography">
+    <h2 class="section-title">Typography</h2>
+    <p class="section-desc">Inter as the sole typeface. Clean, legible, professional. Never pure black (#000) - we use gray-900 (#111827).</p>
+
+    <div class="card">
+      <div class="type-row">
+        <div class="type-label">Display</div>
+        <div class="type-spec">42px / 800 / -0.03em</div>
+        <div style="font-size:42px; font-weight:800; letter-spacing:-0.03em; line-height:1.1">Clinical Excellence</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H1</div>
+        <div class="type-spec">30px / 700 / -0.02em</div>
+        <div style="font-size:30px; font-weight:700; letter-spacing:-0.02em; line-height:1.2">Dashboard Overview</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H2</div>
+        <div class="type-spec">24px / 600 / -0.01em</div>
+        <div style="font-size:24px; font-weight:600; letter-spacing:-0.01em; line-height:1.3">Today's Bookings</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H3</div>
+        <div class="type-spec">18px / 600</div>
+        <div style="font-size:18px; font-weight:600; line-height:1.4">Service Configuration</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H4</div>
+        <div class="type-spec">16px / 600</div>
+        <div style="font-size:16px; font-weight:600; line-height:1.4">Patient Details</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body</div>
+        <div class="type-spec">14px / 400 / 1.6</div>
+        <div style="font-size:14px; font-weight:400; line-height:1.6; max-width:480px">Complete the pre-consultation questionnaire below. Your answers help the pharmacist prepare for your appointment and ensure safe treatment.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body Small</div>
+        <div class="type-spec">13px / 400 / 1.5</div>
+        <div style="font-size:13px; font-weight:400; line-height:1.5; color:var(--gray-600)">Last updated 2 hours ago by Dr. Sarah Chen</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Caption</div>
+        <div class="type-spec">12px / 500 / muted</div>
+        <div style="font-size:12px; font-weight:500; color:var(--gray-400)">GPhC REG: 2087654 | BRANCH: Manchester Central</div>
+      </div>
+      <div class="type-row" style="border:none">
+        <div class="type-label">Overline</div>
+        <div class="type-spec">11px / 600 / 0.08em</div>
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray-400)">Clinical Services</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUTTONS -->
+  <section class="section" id="buttons">
+    <h2 class="section-title">Buttons</h2>
+    <p class="section-desc">Consistent, accessible buttons with clear hierarchy. Primary for main actions, outline for secondary, ghost for tertiary.</p>
+
+    <div class="grid-2">
+      <div class="comp-card">
+        <h4>Variants</h4>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="flex-row">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-ghost">Ghost</button>
+          </div>
+          <div class="flex-row">
+            <button class="btn btn-success">Approve</button>
+            <button class="btn btn-danger">Reject</button>
+            <button class="btn btn-primary" disabled>Disabled</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp-card">
+        <h4>Sizes</h4>
+        <div class="flex-row">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary btn-lg">Large</button>
+        </div>
+        <div style="margin-top:16px">
+          <h4>With Icons</h4>
+          <div class="flex-row" style="margin-top:12px">
+            <button class="btn btn-primary">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Add Service
+            </button>
+            <button class="btn btn-outline">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMS -->
+  <section class="section" id="forms">
+    <h2 class="section-title">Form Controls</h2>
+    <p class="section-desc">Label always above input. Clear error states. Required fields marked with asterisk.</p>
+
+    <div class="grid-2">
+      <div class="comp-card">
+        <h4>Text Inputs</h4>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="form-group">
+            <label class="form-label">Pharmacy Name <span class="required">*</span></label>
+            <input class="form-input" type="text" placeholder="e.g. High Street Pharmacy" value="High Street Pharmacy">
+          </div>
+          <div class="form-group">
+            <label class="form-label">GPhC Registration Number <span class="required">*</span></label>
+            <input class="form-input error" type="text" value="12345" aria-invalid="true">
+            <div class="form-error">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"/></svg>
+              GPhC number must be 7 digits
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Branch Address</label>
+            <input class="form-input" type="text" placeholder="Start typing..." disabled>
+            <div class="form-hint">Disabled state</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp-card">
+        <h4>Other Controls</h4>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="form-group">
+            <label class="form-label">Subscription Tier</label>
+            <select class="form-select">
+              <option>Starter - &pound;99/mo</option>
+              <option>Professional - &pound;199/mo</option>
+              <option>Enterprise - &pound;399/mo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Service Description</label>
+            <textarea class="form-input" rows="3" placeholder="Describe the service..."></textarea>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            <span style="font-size:14px; color:var(--gray-700)">Enable online ordering</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            <span style="font-size:14px; color:var(--gray-700)">Cold-chain dispatch</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="consent" checked style="width:18px; height:18px; accent-color:var(--primary-600);">
+            <label for="consent" style="font-size:14px; color:var(--gray-700)">I consent to the clinical terms</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BADGES -->
+  <section class="section" id="badges">
+    <h2 class="section-title">Badges & Status Indicators</h2>
+    <p class="section-desc">Used across booking statuses, order states, clinical outcomes, and tier labels.</p>
+
+    <div class="grid-2">
+      <div class="comp-card">
+        <h4>Standard Badges</h4>
+        <div class="flex-row">
+          <span class="badge badge-primary">Active</span>
+          <span class="badge badge-success">Approved</span>
+          <span class="badge badge-warning">Pending Review</span>
+          <span class="badge badge-error">Rejected</span>
+          <span class="badge badge-info">In Progress</span>
+          <span class="badge badge-neutral">Draft</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <h4>Dot Badges (Live Status)</h4>
+        <div class="flex-row">
+          <span class="badge badge-dot badge-success">Online</span>
+          <span class="badge badge-dot badge-warning">Awaiting Review</span>
+          <span class="badge badge-dot badge-error">Urgent</span>
+          <span class="badge badge-dot badge-primary">Dispatched</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="comp-card" style="margin-top:var(--space-6)">
+      <h4>Order Status Flow</h4>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:8px">
+        <span class="badge badge-info">Order Received</span>
+        <span style="color:var(--gray-300)">&rarr;</span>
+        <span class="badge badge-warning">Clinical Review</span>
+        <span style="color:var(--gray-300)">&rarr;</span>
+        <span class="badge badge-success">Approved</span>
+        <span style="color:var(--gray-300)">&rarr;</span>
+        <span class="badge badge-info">Dispensing</span>
+        <span style="color:var(--gray-300)">&rarr;</span>
+        <span class="badge badge-primary">Dispatched</span>
+        <span style="color:var(--gray-300)">&rarr;</span>
+        <span class="badge badge-success">Delivered</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section class="section" id="cards">
+    <h2 class="section-title">Cards & Data Display</h2>
+
+    <div class="grid-4" style="margin-bottom:var(--space-6)">
+      <div class="stat-card">
+        <div class="stat-label">Today's Bookings</div>
+        <div class="stat-value">24</div>
+        <div class="stat-change stat-up">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"/></svg>
+          +12% vs last week
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Online Orders</div>
+        <div class="stat-value">18</div>
+        <div class="stat-change stat-up">+8% vs last week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenue Today</div>
+        <div class="stat-value">&pound;3,240</div>
+        <div class="stat-change stat-up">+15% vs last week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejection Rate</div>
+        <div class="stat-value">4.2%</div>
+        <div class="stat-change stat-down">+0.8% vs last week</div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card card-padded">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px">
+          <div>
+            <div style="font-size:16px; font-weight:600">Weight-Loss Clinic</div>
+            <div style="font-size:13px; color:var(--gray-500); margin-top:2px">Wegovy / Mounjaro</div>
+          </div>
+          <span class="badge badge-dot badge-success">Active</span>
+        </div>
+        <div style="display:flex; gap:16px; font-size:13px; color:var(--gray-500)">
+          <span>In-Branch</span>
+          <span>Online</span>
+          <span>&pound;199</span>
+        </div>
+      </div>
+      <div class="card card-padded">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px">
+          <div>
+            <div style="font-size:16px; font-weight:600">Travel Health</div>
+            <div style="font-size:13px; color:var(--gray-500); margin-top:2px">Vaccinations & Antimalarials</div>
+          </div>
+          <span class="badge badge-dot badge-success">Active</span>
+        </div>
+        <div style="display:flex; gap:16px; font-size:13px; color:var(--gray-500)">
+          <span>In-Branch Only</span>
+          <span>From &pound;35</span>
+        </div>
+      </div>
+      <div class="card card-padded">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px">
+          <div>
+            <div style="font-size:16px; font-weight:600">Sexual Health</div>
+            <div style="font-size:13px; color:var(--gray-500); margin-top:2px">STI Testing & Treatment</div>
+          </div>
+          <span class="badge badge-dot badge-warning">Setup Required</span>
+        </div>
+        <div style="display:flex; gap:16px; font-size:13px; color:var(--gray-500)">
+          <span>Online</span>
+          <span>Discreet</span>
+          <span>From &pound;29</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLES -->
+  <section class="section" id="tables">
+    <h2 class="section-title">Tables</h2>
+    <p class="section-desc">Used for orders, bookings, patients, audit logs, and reports.</p>
+
+    <div class="card">
+      <div class="card-header">
+        <div style="font-size:16px; font-weight:600">Online Orders</div>
+        <div class="flex-row">
+          <input class="form-input" type="search" placeholder="Search orders..." style="width:220px; padding:7px 12px; font-size:13px">
+          <button class="btn btn-outline btn-sm">Filters</button>
+          <button class="btn btn-primary btn-sm">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>Product</th>
+              <th>Status</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:500">#ORD-2847</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px">
+                  <div class="avatar avatar-sm avatar-teal">JD</div>
+                  <div>
+                    <div style="font-weight:500; font-size:13px">James Davies</div>
+                    <div style="font-size:12px; color:var(--gray-400)">ID Verified</div>
+                  </div>
+                </div>
+              </td>
+              <td>Weight Loss</td>
+              <td style="font-size:13px">Wegovy 0.25mg</td>
+              <td><span class="badge badge-warning">Awaiting Review</span></td>
+              <td style="font-weight:500">&pound;208.00</td>
+              <td style="font-size:13px; color:var(--gray-500)">24 Apr 2026</td>
+              <td><button class="btn btn-ghost btn-sm">Review</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">#ORD-2846</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px">
+                  <div class="avatar avatar-sm avatar-indigo">SP</div>
+                  <div>
+                    <div style="font-weight:500; font-size:13px">Sarah Parker</div>
+                    <div style="font-size:12px; color:var(--gray-400)">Returning</div>
+                  </div>
+                </div>
+              </td>
+              <td>Sexual Health</td>
+              <td style="font-size:13px">Chlamydia Treatment</td>
+              <td><span class="badge badge-success">Approved</span></td>
+              <td style="font-weight:500">&pound;34.99</td>
+              <td style="font-size:13px; color:var(--gray-500)">24 Apr 2026</td>
+              <td><button class="btn btn-ghost btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500">#ORD-2845</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px">
+                  <div class="avatar avatar-sm avatar-amber">MK</div>
+                  <div>
+                    <div style="font-weight:500; font-size:13px">Mohammed Khan</div>
+                    <div style="font-size:12px; color:var(--gray-400)">New</div>
+                  </div>
+                </div>
+              </td>
+              <td>Weight Loss</td>
+              <td style="font-size:13px">Mounjaro 2.5mg</td>
+              <td><span class="badge badge-dot badge-primary">Dispatched</span></td>
+              <td style="font-weight:500">&pound;189.00</td>
+              <td style="font-size:13px; color:var(--gray-500)">23 Apr 2026</td>
+              <td><button class="btn btn-ghost btn-sm">Track</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAVIGATION -->
+  <section class="section" id="navigation">
+    <h2 class="section-title">Navigation Patterns</h2>
+
+    <div class="grid-2">
+      <div class="comp-card">
+        <h4>Sidebar Navigation (Admin Console)</h4>
+        <div style="background:var(--gray-50); border-radius:var(--radius-md); padding:12px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px; padding:0 8px">
+            <div style="width:32px; height:32px; border-radius:8px; background:var(--primary-600); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px">H</div>
+            <div>
+              <div style="font-size:14px; font-weight:600">High Street Pharmacy</div>
+              <div style="font-size:11px; color:var(--gray-400)">Professional Plan</div>
+            </div>
+          </div>
+          <div style="font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--gray-400); padding:0 12px; margin-bottom:6px">Main</div>
+          <div class="sidebar-item active">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+          </div>
+          <div class="sidebar-item">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Services
+          </div>
+          <div class="sidebar-item">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Bookings
+          </div>
+          <div class="sidebar-item">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            Online Orders
+            <span class="badge badge-error" style="margin-left:auto; font-size:11px; padding:1px 7px">3</span>
+          </div>
+          <div style="font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--gray-400); padding:0 12px; margin:16px 0 6px">Clinical</div>
+          <div class="sidebar-item">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Prescriber Queue
+            <span class="badge badge-warning" style="margin-left:auto; font-size:11px; padding:1px 7px">5</span>
+          </div>
+          <div class="sidebar-item">
+            <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Patients
+          </div>
+        </div>
+      </div>
+      <div class="comp-card">
+        <h4>Tabs Navigation</h4>
+        <div class="tabs" style="margin-top:8px">
+          <div class="tab active">Overview</div>
+          <div class="tab">Bookings</div>
+          <div class="tab">Online Orders</div>
+          <div class="tab">Analytics</div>
+          <div class="tab">Settings</div>
+        </div>
+        <div style="padding:20px 0; color:var(--gray-500); font-size:14px">Tab content area</div>
+
+        <h4 style="margin-top:20px">Breadcrumbs</h4>
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px; margin-top:8px">
+          <a href="#" style="color:var(--gray-400); text-decoration:none">Dashboard</a>
+          <span style="color:var(--gray-300)">/</span>
+          <a href="#" style="color:var(--gray-400); text-decoration:none">Online Orders</a>
+          <span style="color:var(--gray-300)">/</span>
+          <span style="color:var(--gray-700); font-weight:500">#ORD-2847</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEEDBACK -->
+  <section class="section" id="feedback">
+    <h2 class="section-title">Feedback & Alerts</h2>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-4)">
+      <div class="alert alert-info">
+        <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 001-1v-4a1 1 0 10-2 0v4a1 1 0 001 1z"/></svg>
+        <div><strong>ID Verification Required.</strong> This patient has not completed identity verification. Online orders cannot proceed until IDV is passed.</div>
+      </div>
+      <div class="alert alert-success">
+        <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+        <div><strong>Order Approved.</strong> Private prescription generated and dispensing label queued for printing.</div>
+      </div>
+      <div class="alert alert-warning">
+        <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/></svg>
+        <div><strong>Cold-Chain Cut-Off in 2 hours.</strong> 3 orders require dispatch before 14:00 to ensure next-day delivery integrity.</div>
+      </div>
+      <div class="alert alert-error">
+        <svg class="alert-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+        <div><strong>Clinical Review Rejected.</strong> Patient flagged contraindication: concurrent GLP-1 therapy. Auto-refund initiated.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="section" id="steps">
+    <h2 class="section-title">Steps & Progress</h2>
+    <p class="section-desc">Used in booking flow, online order flow, onboarding wizard, and PGD consultation tool.</p>
+
+    <div class="comp-card">
+      <h4>Booking Flow (Patient-Facing)</h4>
+      <div class="steps" style="margin-top:12px; margin-bottom:0">
+        <div class="step completed"><div class="step-num">&#10003;</div>Service</div>
+        <div class="step-line completed"></div>
+        <div class="step completed"><div class="step-num">&#10003;</div>Date & Time</div>
+        <div class="step-line completed"></div>
+        <div class="step active"><div class="step-num">3</div>Questionnaire</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div>Consent & Pay</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">5</div>Confirmed</div>
+      </div>
+    </div>
+
+    <div class="comp-card" style="margin-top: var(--space-4)">
+      <h4>Online Order Flow</h4>
+      <div class="steps" style="margin-top:12px; margin-bottom:0">
+        <div class="step completed"><div class="step-num">&#10003;</div>Indication</div>
+        <div class="step-line completed"></div>
+        <div class="step active"><div class="step-num">2</div>Questionnaire</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">3</div>ID Verify</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">4</div>Consent & Pay</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-num">5</div>Review & Track</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATES -->
+  <section class="section" id="states">
+    <h2 class="section-title">Loading & Empty States</h2>
+
+    <div class="grid-2">
+      <div class="comp-card">
+        <h4>Skeleton Loading</h4>
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:20px">
+          <div class="skeleton" style="width:40px; height:40px; border-radius:50%; flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="skeleton" style="height:14px; width:60%; margin-bottom:8px"></div>
+            <div class="skeleton" style="height:12px; width:40%"></div>
+          </div>
+        </div>
+        <div class="skeleton" style="height:12px; width:100%; margin-bottom:8px"></div>
+        <div class="skeleton" style="height:12px; width:90%; margin-bottom:8px"></div>
+        <div class="skeleton" style="height:12px; width:75%"></div>
+      </div>
+      <div class="comp-card">
+        <h4>Empty State</h4>
+        <div class="empty-state" style="padding:32px 16px">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width:48px; height:48px; color:var(--gray-300)">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          <h3>No orders yet</h3>
+          <p>Online orders will appear here once patients start purchasing through your storefront.</p>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px">Enable Online Ordering</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page Navigation -->
+  <div class="page-nav">
+    <a href="01-patient-storefront.html">Patient Storefront &rarr;</a>
+    <a href="02-pharmacy-admin.html" class="outline">Pharmacy Admin Console &rarr;</a>
+    <a href="03-clinician-dashboard.html" class="outline">Clinician Dashboard &rarr;</a>
+    <a href="04-super-admin.html" class="outline">Super Admin Console &rarr;</a>
+  </div>
+
+</div>
+
+<script>
+// Smooth scroll for nav
+document.querySelectorAll('.ds-nav a').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.ds-nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
