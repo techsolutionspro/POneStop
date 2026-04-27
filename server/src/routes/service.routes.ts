@@ -87,7 +87,8 @@ router.get('/storefront/:slug', async (req: Request, res: Response, next: NextFu
       select: {
         id: true, name: true, description: true, heroImageUrl: true,
         price: true, depositAmount: true, duration: true,
-        fulfilmentModes: true, isDiscreet: true,
+        category: true, fulfilmentModes: true, isDiscreet: true,
+        requiresIdv: true, requiresQuestionnaire: true, requiresPrescriberReview: true,
         pgd: { select: { therapyArea: true } },
       },
       orderBy: { name: 'asc' },
