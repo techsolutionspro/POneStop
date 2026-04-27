@@ -4,6 +4,7 @@ import { authenticate, requireClinicalRole, requireAdminRole, scopeToTenant, req
 import { createOnlineOrderSchema, reviewOrderSchema } from '../validators/service.validators';
 import { generateReference, paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError, ForbiddenError, ValidationError } from '../utils/errors';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
@@ -76,12 +77,12 @@ router.post('/', authenticate, async (req: Request, res: Response, next: NextFun
 // GET /api/orders — List orders
 router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 20;
-    const status = String(req.query.status || '');
-    const branchId = String(req.query.branchId || '');
-    const reviewerId = String(req.query.reviewerId || '');
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 20);
+    const status = qs(req, 'status');
+    const branchId = qs(req, 'branchId');
+    const reviewerId = qs(req, 'reviewerId');
 
     const where: any = { tenantId };
     if (status) where.status = status;
@@ -116,7 +117,7 @@ router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response,
 // GET /api/orders/queue — Prescriber review queue
 router.get('/queue', authenticate, requireClinicalRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
 
     const orders = await prisma.onlineOrder.findMany({
       where: {
@@ -142,7 +143,7 @@ router.get('/queue', authenticate, requireClinicalRole, scopeToTenant, async (re
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const order = await prisma.onlineOrder.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         service: { include: { pgd: true } },
         patient: {
@@ -164,7 +165,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response, next: NextF
 router.post('/:id/review', authenticate, requireRole('PRESCRIBER', 'PHARMACIST', 'SUPER_ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = reviewOrderSchema.parse(req.body);
-    const orderId = req.params.id;
+    const orderId = String(req.params.id);
     const reviewerId = req.user!.userId;
 
     const order = await prisma.onlineOrder.findUnique({ where: { id: orderId } });
@@ -229,7 +230,7 @@ router.post('/:id/review', authenticate, requireRole('PRESCRIBER', 'PHARMACIST',
 router.post('/:id/dispatch', authenticate, requireRole('DISPATCH_CLERK', 'DISPENSER', 'BRANCH_MANAGER', 'TENANT_OWNER', 'SUPER_ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { courier, trackingNumber } = req.body;
-    const orderId = req.params.id;
+    const orderId = String(req.params.id);
 
     const order = await prisma.onlineOrder.findUnique({
       where: { id: orderId },
@@ -271,7 +272,7 @@ router.post('/:id/dispatch', authenticate, requireRole('DISPATCH_CLERK', 'DISPEN
 router.get('/track/:reference', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const order = await prisma.onlineOrder.findUnique({
-      where: { reference: req.params.reference },
+      where: { reference: String(req.params.reference) },
       select: {
         reference: true, status: true, productName: true, totalAmount: true, createdAt: true,
         shipment: {

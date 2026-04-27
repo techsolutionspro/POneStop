@@ -8,8 +8,9 @@ export class SmsService {
     }
 
     // Production: Twilio
-    const twilio = await import('twilio');
-    const client = twilio.default(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const twilio = require('twilio');
+    const client = twilio(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN);
     await client.messages.create({
       body: message,
       from: env.TWILIO_PHONE_NUMBER,

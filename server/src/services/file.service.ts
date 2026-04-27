@@ -20,7 +20,8 @@ export class FileService {
     }
 
     // Production: S3
-    const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
     const s3 = new S3Client({ region: env.AWS_REGION });
     await s3.send(new PutObjectCommand({
       Bucket: env.AWS_S3_BUCKET,
@@ -40,7 +41,8 @@ export class FileService {
     }
     // S3 deletion
     if (env.AWS_S3_BUCKET) {
-      const { S3Client, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
       const s3 = new S3Client({ region: env.AWS_REGION });
       const key = url.split('.amazonaws.com/')[1];
       if (key) await s3.send(new DeleteObjectCommand({ Bucket: env.AWS_S3_BUCKET, Key: key }));

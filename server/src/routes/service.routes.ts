@@ -4,6 +4,7 @@ import { authenticate, requireAdminRole, requireTenantAccess, scopeToTenant } fr
 import { createServiceSchema, updateServiceSchema } from '../validators/service.validators';
 import { NotFoundError } from '../utils/errors';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
+import { qs } from '../utils/query';
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.post('/', authenticate, requireAdminRole, scopeToTenant, async (req: Requ
 // GET /api/services — List tenant's services
 router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
     const services = await prisma.tenantService.findMany({
       where: { tenantId: tenantId!, isActive: true },
       include: {
@@ -45,7 +46,7 @@ router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response,
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const service = await prisma.tenantService.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         pgd: true,
         branchServices: { include: { branch: { select: { id: true, name: true } } } },
@@ -61,7 +62,7 @@ router.put('/:id', authenticate, requireAdminRole, async (req: Request, res: Res
   try {
     const data = updateServiceSchema.parse(req.body);
     const service = await prisma.tenantService.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data,
     });
     res.json({ success: true, data: service });
@@ -76,7 +77,7 @@ router.put('/:id', authenticate, requireAdminRole, async (req: Request, res: Res
 router.get('/storefront/:slug', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const tenant = await prisma.tenant.findUnique({
-      where: { slug: req.params.slug },
+      where: { slug: String(req.params.slug) },
       select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true, secondaryColor: true },
     });
     if (!tenant) throw new NotFoundError('Pharmacy');

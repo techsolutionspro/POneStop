@@ -4,6 +4,7 @@ import { authenticate, requireSuperAdmin, requireClinicalRole } from '../middlew
 import { NotFoundError } from '../utils/errors';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
 import { z } from 'zod';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
@@ -29,7 +30,18 @@ router.post('/', authenticate, requireSuperAdmin, async (req: Request, res: Resp
     const data = createPgdSchema.parse(req.body);
     const pgd = await prisma.pgd.create({
       data: {
-        ...data,
+        title: data.title,
+        version: data.version,
+        therapyArea: data.therapyArea,
+        indication: data.indication,
+        inclusionCriteria: data.inclusionCriteria,
+        exclusionCriteria: data.exclusionCriteria,
+        redFlags: data.redFlags,
+        authorisedProducts: data.authorisedProducts,
+        doseRegimen: data.doseRegimen,
+        counsellingPoints: data.counsellingPoints ?? undefined,
+        competenciesRequired: data.competenciesRequired ?? undefined,
+        fulfilmentModes: data.fulfilmentModes,
         authorId: req.user!.userId,
         reviewDate: data.reviewDate ? new Date(data.reviewDate) : undefined,
       },
@@ -41,10 +53,10 @@ router.post('/', authenticate, requireSuperAdmin, async (req: Request, res: Resp
 // GET /api/pgds — List PGDs
 router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 50;
-    const status = req.query.status as string;
-    const therapyArea = req.query.therapyArea as string;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 50);
+    const status = qs(req, 'status');
+    const therapyArea = qs(req, 'therapyArea');
 
     const where: any = {};
     if (status) where.status = status;
@@ -77,7 +89,7 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pgd = await prisma.pgd.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: { _count: { select: { services: true, consultations: true } } },
     });
     if (!pgd) throw new NotFoundError('PGD');
@@ -90,7 +102,7 @@ router.put('/:id', authenticate, requireSuperAdmin, async (req: Request, res: Re
   try {
     const data = req.body;
     const pgd = await prisma.pgd.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         ...data,
         reviewDate: data.reviewDate ? new Date(data.reviewDate) : undefined,
@@ -104,7 +116,7 @@ router.put('/:id', authenticate, requireSuperAdmin, async (req: Request, res: Re
 router.post('/:id/publish', authenticate, requireSuperAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const pgd = await prisma.pgd.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         status: 'PUBLISHED',
         publishedAt: new Date(),

@@ -3,16 +3,17 @@ import { prisma } from '../config/db';
 import { authenticate, requireAdminRole, scopeToTenant } from '../middleware/auth';
 import { NotFoundError } from '../utils/errors';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
 // GET /api/patients — List patients for a tenant
 router.get('/', authenticate, requireAdminRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 20;
-    const search = String(req.query.search || '');
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 20);
+    const search = qs(req, 'search');
 
     const where: any = { tenantId };
     if (search) {
@@ -46,7 +47,7 @@ router.get('/', authenticate, requireAdminRole, scopeToTenant, async (req: Reque
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const patient = await prisma.patientProfile.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         user: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
         bookings: {
@@ -71,7 +72,7 @@ router.put('/:id', authenticate, async (req: Request, res: Response, next: NextF
   try {
     const { dateOfBirth, gender, address, city, postcode, nhsNumber, gpPractice, gpSharingConsent, marketingConsent } = req.body;
     const patient = await prisma.patientProfile.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
         ...(gender !== undefined && { gender }),
@@ -93,7 +94,7 @@ router.post('/:id/idv', authenticate, async (req: Request, res: Response, next: 
   try {
     const { status, provider, documentType } = req.body;
     const patient = await prisma.patientProfile.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         idvStatus: status,
         idvProvider: provider,

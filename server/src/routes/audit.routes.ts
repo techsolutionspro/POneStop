@@ -2,18 +2,19 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { authenticate, requireSuperAdmin, requireAdminRole, scopeToTenant } from '../middleware/auth';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
 // GET /api/audit — Audit log (Super-Admin: all, Tenant Admin: own tenant)
 router.get('/', authenticate, requireAdminRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 50;
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
-    const action = String(req.query.action || '');
-    const resource = String(req.query.resource || '');
-    const userId = String(req.query.userId || '');
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 50);
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
+    const action = qs(req, 'action');
+    const resource = qs(req, 'resource');
+    const userId = qs(req, 'userId');
 
     const where: any = {};
     if (tenantId) where.tenantId = tenantId;

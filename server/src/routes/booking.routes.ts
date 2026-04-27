@@ -4,6 +4,7 @@ import { authenticate, requireAdminRole, requireClinicalRole, scopeToTenant } fr
 import { createBookingSchema, updateBookingStatusSchema } from '../validators/service.validators';
 import { generateReference, paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError } from '../utils/errors';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
@@ -66,13 +67,13 @@ router.post('/', authenticate, async (req: Request, res: Response, next: NextFun
 // GET /api/bookings — List bookings
 router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 20;
-    const status = String(req.query.status || '');
-    const branchId = String(req.query.branchId || '');
-    const date = String(req.query.date || '');
-    const patientId = String(req.query.patientId || '');
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 20);
+    const status = qs(req, 'status');
+    const branchId = qs(req, 'branchId');
+    const date = qs(req, 'date');
+    const patientId = qs(req, 'patientId');
 
     const where: any = { tenantId };
     if (status) where.status = status;
@@ -111,7 +112,7 @@ router.get('/', authenticate, scopeToTenant, async (req: Request, res: Response,
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const booking = await prisma.booking.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         branch: true,
         service: { include: { pgd: { select: { id: true, title: true, version: true } } } },
@@ -129,7 +130,7 @@ router.put('/:id/status', authenticate, async (req: Request, res: Response, next
   try {
     const { status, cancellationReason } = updateBookingStatusSchema.parse(req.body);
     const booking = await prisma.booking.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: { status, cancellationReason },
     });
     res.json({ success: true, data: booking });
@@ -139,7 +140,7 @@ router.put('/:id/status', authenticate, async (req: Request, res: Response, next
 // GET /api/bookings/today — Today's bookings for clinician dashboard
 router.get('/today/list', authenticate, requireClinicalRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today.getTime() + 86400000);

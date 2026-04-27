@@ -1,13 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { authenticate, requireAdminRole, requireSuperAdmin, scopeToTenant } from '../middleware/auth';
+import { qs } from '../utils/query';
 
 const router = Router();
 
 // GET /api/dashboard/tenant — Tenant admin dashboard stats
 router.get('/tenant', authenticate, requireAdminRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today.getTime() + 86400000);

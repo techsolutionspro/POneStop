@@ -227,7 +227,7 @@ export class SecurityService {
         postcode: null,
         nhsNumber: null,
         gpPractice: null,
-        familyMembers: null,
+        familyMembers: undefined,
       },
     });
 

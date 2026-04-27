@@ -15,7 +15,8 @@ export class EmailService {
     }
 
     // Production: use Nodemailer with SES/Postmark
-    const nodemailer = await import('nodemailer');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,

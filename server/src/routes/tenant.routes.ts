@@ -4,6 +4,7 @@ import { authenticate, requireSuperAdmin, requireAdminRole, requireTenantAccess,
 import { AuthService } from '../services/auth.service';
 import { generateSlug, paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError } from '../utils/errors';
+import { qs, qn } from '../utils/query';
 import {
   createTenantSchema, updateTenantSchema, updateTenantStatusSchema,
   updateTenantTierSchema, updateDspSchema, createBranchSchema, updateBranchSchema,
@@ -62,11 +63,11 @@ router.post('/', authenticate, requireSuperAdmin, async (req: Request, res: Resp
 // GET /api/tenants — List all tenants (Super-Admin, Support)
 router.get('/', authenticate, requireSuperAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 20;
-    const status = String(req.query.status || '');
-    const tier = String(req.query.tier || '');
-    const search = String(req.query.search || '');
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 20);
+    const status = qs(req, 'status');
+    const tier = qs(req, 'tier');
+    const search = qs(req, 'search');
 
     const where: any = {};
     if (status) where.status = status;
@@ -93,7 +94,7 @@ router.get('/', authenticate, requireSuperAdmin, async (req: Request, res: Respo
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const tenant = await prisma.tenant.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       include: {
         branches: true,
         _count: { select: { users: true, bookings: true, onlineOrders: true, services: true } },
@@ -109,7 +110,7 @@ router.put('/:id', authenticate, requireAdminRole, async (req: Request, res: Res
   try {
     const data = updateTenantSchema.parse(req.body);
     const tenant = await prisma.tenant.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data,
     });
     res.json({ success: true, data: tenant });
@@ -121,7 +122,7 @@ router.put('/:id/status', authenticate, requireSuperAdmin, async (req: Request, 
   try {
     const { status } = updateTenantStatusSchema.parse(req.body);
     const tenant = await prisma.tenant.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: { status, goLiveAt: status === 'ACTIVE' ? new Date() : undefined },
     });
     res.json({ success: true, data: tenant });
@@ -133,7 +134,7 @@ router.put('/:id/tier', authenticate, requireSuperAdmin, async (req: Request, re
   try {
     const { tier } = updateTenantTierSchema.parse(req.body);
     const tenant = await prisma.tenant.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: { tier },
     });
     res.json({ success: true, data: tenant });
@@ -145,7 +146,7 @@ router.put('/:id/dsp', authenticate, requireSuperAdmin, async (req: Request, res
   try {
     const data = updateDspSchema.parse(req.body);
     const tenant = await prisma.tenant.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         ...data,
         dspVerifiedAt: data.dspStatus === 'VERIFIED' ? new Date() : undefined,
@@ -165,7 +166,7 @@ router.post('/:tenantId/branches', authenticate, requireAdminRole, requireTenant
   try {
     const data = createBranchSchema.parse(req.body);
     const branch = await prisma.branch.create({
-      data: { ...data, tenantId: req.params.tenantId },
+      data: { ...data, tenantId: String(req.params.tenantId) },
     });
     res.status(201).json({ success: true, data: branch });
   } catch (err) { next(err); }
@@ -175,7 +176,7 @@ router.post('/:tenantId/branches', authenticate, requireAdminRole, requireTenant
 router.get('/:tenantId/branches', authenticate, requireTenantAccess, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const branches = await prisma.branch.findMany({
-      where: { tenantId: req.params.tenantId },
+      where: { tenantId: String(req.params.tenantId) },
       include: { _count: { select: { staff: true, bookings: true } } },
       orderBy: { name: 'asc' },
     });
@@ -188,7 +189,7 @@ router.put('/:tenantId/branches/:branchId', authenticate, requireAdminRole, requ
   try {
     const data = updateBranchSchema.parse(req.body);
     const branch = await prisma.branch.update({
-      where: { id: req.params.branchId },
+      where: { id: String(req.params.branchId) },
       data,
     });
     res.json({ success: true, data: branch });

@@ -5,6 +5,7 @@ import { authenticate, requireAdminRole, requireTenantAccess, scopeToTenant, req
 import { inviteStaffSchema } from '../validators/auth.validators';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError, ForbiddenError } from '../utils/errors';
+import { qs, qn } from '../utils/query';
 
 const router = Router();
 
@@ -50,11 +51,11 @@ router.post('/invite', authenticate, requireAdminRole, async (req: Request, res:
 // GET /api/staff — List staff for tenant
 router.get('/', authenticate, requireAdminRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const tenantId = String(req.query.tenantId || '') || req.user!.tenantId;
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 50;
-    const role = String(req.query.role || '');
-    const branchId = String(req.query.branchId || '');
+    const tenantId = qs(req, 'tenantId') || req.user!.tenantId;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 50);
+    const role = qs(req, 'role');
+    const branchId = qs(req, 'branchId');
 
     const where: any = {
       tenantId,
@@ -85,7 +86,7 @@ router.get('/', authenticate, requireAdminRole, scopeToTenant, async (req: Reque
 router.get('/:id', authenticate, requireAdminRole, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       select: {
         id: true, email: true, firstName: true, lastName: true, phone: true,
         role: true, isActive: true, mfaEnabled: true, lastLoginAt: true, createdAt: true,
@@ -103,7 +104,7 @@ router.put('/:id', authenticate, requireAdminRole, async (req: Request, res: Res
     const { firstName, lastName, phone, role, isActive, branchId, gphcNumber, gmcNumber, prescribingCategory } = req.body;
 
     const user = await prisma.user.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: {
         ...(firstName && { firstName }),
         ...(lastName && { lastName }),
@@ -140,7 +141,7 @@ router.put('/:id', authenticate, requireAdminRole, async (req: Request, res: Res
 router.delete('/:id', authenticate, requireAdminRole, async (req: Request, res: Response, next: NextFunction) => {
   try {
     await prisma.user.update({
-      where: { id: req.params.id },
+      where: { id: String(req.params.id) },
       data: { isActive: false },
     });
     res.json({ success: true, message: 'Staff member deactivated' });
@@ -150,8 +151,8 @@ router.delete('/:id', authenticate, requireAdminRole, async (req: Request, res: 
 // GET /api/staff/platform/users — Platform-level user management (Super-Admin)
 router.get('/platform/users', authenticate, requireSuperAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const page = parseInt(String(req.query.page || '')) || 1;
-    const limit = parseInt(String(req.query.limit || '')) || 50;
+    const page = qn(req, 'page', 1);
+    const limit = qn(req, 'limit', 50);
 
     const where = { role: { in: ['SUPER_ADMIN' as const, 'SUPPORT_AGENT' as const] } };
     const [users, total] = await Promise.all([
