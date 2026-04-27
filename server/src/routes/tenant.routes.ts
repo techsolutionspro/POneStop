@@ -129,6 +129,37 @@ router.put('/:id/status', authenticate, requireSuperAdmin, async (req: Request, 
   } catch (err) { next(err); }
 });
 
+// POST /api/tenants/:id/go-live — Tenant owner activates their pharmacy
+router.post('/:id/go-live', authenticate, requireAdminRole, requireTenantAccess, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { id: String(req.params.id) } });
+    if (!tenant) throw new NotFoundError('Tenant');
+    if (tenant.status !== 'ONBOARDING') {
+      res.status(400).json({ success: false, error: 'Pharmacy is already live' });
+      return;
+    }
+
+    const updated = await prisma.tenant.update({
+      where: { id: String(req.params.id) },
+      data: { status: 'ACTIVE', goLiveAt: new Date(), onboardingStep: 7 },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        tenantId: tenant.id,
+        userId: req.user!.userId,
+        action: 'UPDATE',
+        resource: 'tenant',
+        resourceId: tenant.id,
+        details: { action: 'go_live', previousStatus: 'ONBOARDING' },
+      },
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (err) { next(err); }
+});
+
 // PUT /api/tenants/:id/tier (Super-Admin)
 router.put('/:id/tier', authenticate, requireSuperAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
