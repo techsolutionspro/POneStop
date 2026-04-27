@@ -43,6 +43,14 @@ enum ServiceFulfilmentMode {
   CLICK_AND_COLLECT
 }
 
+enum ServiceCategory {
+  BASIC_CONSULTATION
+  OTC
+  PHARMACY_MEDICINE
+  POM_PGD
+  POM_PRESCRIBING
+}
+
 enum PgdStatus {
   DRAFT
   IN_REVIEW
@@ -383,8 +391,9 @@ model TenantService {
   id              String   @id @default(cuid())
   tenantId        String
   tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  pgdId           String
-  pgd             Pgd      @relation(fields: [pgdId], references: [id])
+  pgdId           String?  // Optional — OTC/P/basic services don't need a PGD
+  pgd             Pgd?     @relation(fields: [pgdId], references: [id])
+  category        ServiceCategory @default(POM_PGD)
   name            String
   description     String?
   heroImageUrl    String?
@@ -396,6 +405,9 @@ model TenantService {
   fulfilmentModes ServiceFulfilmentMode[]
   isActive        Boolean  @default(true)
   isDiscreet      Boolean  @default(false)
+  requiresIdv     Boolean  @default(false) // IDV needed for online POM
+  requiresQuestionnaire Boolean @default(true)
+  requiresPrescriberReview Boolean @default(false) // true for POM prescribing
 
   // Questionnaire (JSON schema for branching logic)
   questionnaireSchema Json?
@@ -411,8 +423,8 @@ model TenantService {
   bookings        Booking[]
   onlineOrders    OnlineOrder[]
 
-  @@unique([tenantId, pgdId])
   @@index([tenantId])
+  @@index([category])
 }
 
 model BranchService {
