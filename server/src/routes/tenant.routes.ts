@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { authenticate, requireSuperAdmin, requireAdminRole, requireTenantAccess, scopeToTenant } from '../middleware/auth';
+import { enforceBranchLimit } from '../middleware/tierEnforcement';
 import { AuthService } from '../services/auth.service';
 import { generateSlug, paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError } from '../utils/errors';
@@ -193,7 +194,7 @@ router.put('/:id/dsp', authenticate, requireSuperAdmin, async (req: Request, res
 // ============================================================
 
 // POST /api/tenants/:tenantId/branches
-router.post('/:tenantId/branches', authenticate, requireAdminRole, requireTenantAccess, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:tenantId/branches', authenticate, requireAdminRole, requireTenantAccess, enforceBranchLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = createBranchSchema.parse(req.body);
     const branch = await prisma.branch.create({

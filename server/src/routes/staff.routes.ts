@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/db';
 import { authenticate, requireAdminRole, requireTenantAccess, scopeToTenant, requireSuperAdmin } from '../middleware/auth';
+import { enforceStaffLimit } from '../middleware/tierEnforcement';
 import { inviteStaffSchema } from '../validators/auth.validators';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError, ForbiddenError } from '../utils/errors';
@@ -10,7 +11,7 @@ import { qs, qn } from '../utils/query';
 const router = Router();
 
 // POST /api/staff/invite — Invite staff member to tenant
-router.post('/invite', authenticate, requireAdminRole, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/invite', authenticate, requireAdminRole, enforceStaffLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = inviteStaffSchema.parse(req.body);
     const tenantId = req.user!.tenantId;

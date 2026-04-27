@@ -17,6 +17,10 @@ import patientRoutes from './routes/patient.routes';
 import auditRoutes from './routes/audit.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import securityRoutes from './routes/security.routes';
+import uploadRoutes from './routes/upload.routes';
+import webhookRoutes from './routes/webhook.routes';
+import { startRecurringJobs } from './services/jobQueue';
+import { logger } from './services/logger';
 
 const app = express();
 
@@ -24,12 +28,19 @@ const app = express();
 // GLOBAL MIDDLEWARE
 // ============================================================
 
+import { requestLogger } from './middleware/requestLogger';
+
 app.use(helmet());
+app.use(requestLogger);
 app.use(cors({
   origin: env.FRONTEND_URL,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
+
+// XSS sanitization
+import { sanitizeInput } from './middleware/sanitize';
+app.use(sanitizeInput);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -69,6 +80,8 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // ============================================================
 // ERROR HANDLING
@@ -86,8 +99,8 @@ app.use((_req, res) => {
 // ============================================================
 
 app.listen(env.PORT, () => {
-  console.log(`[Server] Pharmacy One Stop API running on port ${env.PORT}`);
-  console.log(`[Server] Environment: ${env.NODE_ENV}`);
+  logger.info(`Pharmacy One Stop API running on port ${env.PORT}`, { env: env.NODE_ENV });
+  startRecurringJobs();
 });
 
 export default app;

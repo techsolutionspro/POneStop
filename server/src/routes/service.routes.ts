@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/db';
 import { authenticate, requireAdminRole, requireTenantAccess, scopeToTenant } from '../middleware/auth';
+import { enforceServiceLimit } from '../middleware/tierEnforcement';
 import { createServiceSchema, updateServiceSchema } from '../validators/service.validators';
 import { NotFoundError } from '../utils/errors';
 import { paginate, buildPaginationMeta } from '../utils/helpers';
@@ -13,7 +14,7 @@ const router = Router();
 // ============================================================
 
 // POST /api/services — Activate a service for the tenant
-router.post('/', authenticate, requireAdminRole, scopeToTenant, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', authenticate, requireAdminRole, scopeToTenant, enforceServiceLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = createServiceSchema.parse(req.body);
     const tenantId = req.user!.tenantId!;
