@@ -1,6 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../config/db';
+import { env } from '../config/env';
 import { AuthService } from '../services/auth.service';
 import { authenticate, requireSuperAdmin } from '../middleware/auth';
+import { generateSlug } from '../utils/helpers';
 import {
   registerSchema, loginSchema, refreshTokenSchema,
   changePasswordSchema, createPlatformUserSchema,
@@ -46,7 +52,6 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
 // GET /api/auth/me
 router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { prisma } = await import('../config/db');
     const user = await prisma.user.findUnique({
       where: { id: req.user!.userId },
       select: {
@@ -67,6 +72,124 @@ router.put('/change-password', authenticate, async (req: Request, res: Response,
     const data = changePasswordSchema.parse(req.body);
     await AuthService.changePassword(req.user!.userId, data.currentPassword, data.newPassword);
     res.json({ success: true, message: 'Password changed' });
+  } catch (err) { next(err); }
+});
+
+// POST /api/auth/signup — Self-service pharmacy signup (creates tenant + owner)
+router.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const signupSchema = z.object({
+      pharmacyName: z.string().min(2).max(200),
+      firstName: z.string().min(1).max(100),
+      lastName: z.string().min(1).max(100),
+      email: z.string().email(),
+      password: z.string().min(8)
+        .regex(/[A-Z]/, 'Must contain uppercase letter')
+        .regex(/[a-z]/, 'Must contain lowercase letter')
+        .regex(/[0-9]/, 'Must contain a number'),
+      phone: z.string().optional(),
+      tier: z.enum(['STARTER', 'PROFESSIONAL', 'ENTERPRISE']).default('STARTER'),
+    });
+    const data = signupSchema.parse(req.body);
+
+    // Using static imports from top of file
+
+    // Check email not taken
+    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existing) {
+      res.status(409).json({ success: false, error: 'Email already registered. Please login instead.' });
+      return;
+    }
+
+    const slug = generateSlug(data.pharmacyName);
+
+    // Check slug not taken
+    const existingTenant = await prisma.tenant.findUnique({ where: { slug } });
+    if (existingTenant) {
+      res.status(409).json({ success: false, error: 'A pharmacy with a similar name already exists. Please contact support.' });
+      return;
+    }
+
+    // Create tenant + owner in a transaction
+    const result = await prisma.$transaction(async (tx: any) => {
+      const tenant = await tx.tenant.create({
+        data: {
+          name: data.pharmacyName,
+          slug,
+          tier: data.tier,
+          status: 'ONBOARDING',
+          subdomain: slug,
+          onboardingStep: 0,
+        },
+      });
+
+      const passwordHash = await bcrypt.hash(data.password, 12);
+      const owner = await tx.user.create({
+        data: {
+          email: data.email,
+          passwordHash,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          role: 'TENANT_OWNER',
+          tenantId: tenant.id,
+          emailVerified: false,
+        },
+      });
+
+      return { tenant, owner };
+    });
+
+    // Generate tokens so user is auto-logged-in after signup
+
+    const accessToken = jwt.sign(
+      { userId: result.owner.id, email: result.owner.email, role: 'TENANT_OWNER', tenantId: result.tenant.id },
+      env.JWT_SECRET,
+      { expiresIn: env.JWT_EXPIRES_IN } as any
+    );
+    const refreshToken = jwt.sign(
+      { userId: result.owner.id, type: 'refresh' },
+      env.JWT_REFRESH_SECRET,
+      { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as any
+    );
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    await prisma.refreshToken.create({ data: { token: refreshToken, userId: result.owner.id, expiresAt } });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        tenantId: result.tenant.id,
+        userId: result.owner.id,
+        action: 'CREATE',
+        resource: 'tenant',
+        resourceId: result.tenant.id,
+        details: { pharmacyName: data.pharmacyName, tier: data.tier, selfService: true },
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: result.owner.id,
+          email: result.owner.email,
+          firstName: result.owner.firstName,
+          lastName: result.owner.lastName,
+          role: 'TENANT_OWNER',
+          tenantId: result.tenant.id,
+          tenant: {
+            id: result.tenant.id,
+            name: result.tenant.name,
+            slug: result.tenant.slug,
+            status: result.tenant.status,
+            tier: result.tenant.tier,
+          },
+        },
+        accessToken,
+        refreshToken,
+      },
+    });
   } catch (err) { next(err); }
 });
 
