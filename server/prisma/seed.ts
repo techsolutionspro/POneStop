@@ -8,6 +8,50 @@ async function main() {
   console.log('Seeding database...\n');
 
   // ============================================================
+  // PACKAGES (Pricing tiers)
+  // ============================================================
+  await prisma.package.upsert({
+    where: { tier: 'STARTER' },
+    update: {},
+    create: {
+      tier: 'STARTER', name: 'Starter', description: 'For pharmacies getting started with clinical services.',
+      price: 99, annualPrice: 948, sortOrder: 0, ctaText: 'Start Free Trial',
+      maxBranches: 1, maxPgds: 20, maxStaff: 10,
+      onlineOrdering: false, customDomain: false, customMailbox: false, videoConsults: false,
+      marketingTools: false, groupManagement: false, apiAccess: false, dedicatedSupport: false, customWebsite: false,
+      features: ['1 branch', 'Template website + subdomain', 'Up to 20 PGDs', 'Booking engine + payments', 'SMS & email reminders', 'Basic reports'],
+      consultationFee: 0.50, dispatchFee: 1.50, smsFee: 0.05, paymentUplift: 0.5,
+    },
+  });
+  await prisma.package.upsert({
+    where: { tier: 'PROFESSIONAL' },
+    update: {},
+    create: {
+      tier: 'PROFESSIONAL', name: 'Professional', description: 'Full platform with online ordering and home delivery.',
+      price: 199, annualPrice: 1908, isPopular: true, sortOrder: 1, ctaText: 'Start Free Trial',
+      maxBranches: 3, maxPgds: 999, maxStaff: 50,
+      onlineOrdering: true, customDomain: true, customMailbox: true, videoConsults: false,
+      marketingTools: true, groupManagement: false, apiAccess: false, dedicatedSupport: false, customWebsite: false,
+      features: ['Up to 3 branches', 'Full 100+ PGD library', 'Online ordering + home delivery', 'Custom domain + 1 mailbox', 'Marketing tools + full reports', 'Subscription / repeat orders', 'ID verification', 'Prescriber queue'],
+      consultationFee: 0.50, dispatchFee: 1.50, smsFee: 0.05, paymentUplift: 0.5,
+    },
+  });
+  await prisma.package.upsert({
+    where: { tier: 'ENTERPRISE' },
+    update: {},
+    create: {
+      tier: 'ENTERPRISE', name: 'Enterprise', description: 'For pharmacy groups. Custom build and dedicated support.',
+      price: 399, annualPrice: 3828, sortOrder: 2, ctaText: 'Book a Demo',
+      maxBranches: 999, maxPgds: 999, maxStaff: 999,
+      onlineOrdering: true, customDomain: true, customMailbox: true, videoConsults: true,
+      marketingTools: true, groupManagement: true, apiAccess: true, dedicatedSupport: true, customWebsite: true,
+      features: ['Unlimited branches + SSO', 'Custom bespoke website design', 'Video consultations', 'Group-level analytics + benchmarking', '5 mailboxes + priority DNS', 'Dedicated account manager', 'API access', 'White-label everything'],
+      consultationFee: 0.40, dispatchFee: 1.20, smsFee: 0.04, paymentUplift: 0.4,
+    },
+  });
+  console.log('Created 3 packages');
+
+  // ============================================================
   // PLATFORM USERS
   // ============================================================
   const superAdmin = await prisma.user.upsert({

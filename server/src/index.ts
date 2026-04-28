@@ -19,6 +19,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import securityRoutes from './routes/security.routes';
 import uploadRoutes from './routes/upload.routes';
 import webhookRoutes from './routes/webhook.routes';
+import packageRoutes from './routes/package.routes';
 import { startRecurringJobs } from './services/jobQueue';
 import { logger } from './services/logger';
 
@@ -81,6 +82,7 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/packages', packageRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // ============================================================

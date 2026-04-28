@@ -796,3 +796,48 @@ model AuditLog {
   @@index([createdAt])
   @@index([resource, resourceId])
 }
+
+// ============================================================
+// PACKAGES / PRICING (Dynamic, managed by super-admin)
+// ============================================================
+
+model Package {
+  id              String   @id @default(cuid())
+  tier            SubscriptionTier @unique
+  name            String
+  description     String
+  price           Float    // Monthly price in GBP
+  annualPrice     Float?   // Annual price (discounted)
+  isPopular       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  ctaText         String   @default("Start Free Trial")
+
+  // Limits
+  maxBranches     Int      @default(1)
+  maxPgds         Int      @default(20)
+  maxStaff        Int      @default(10)
+
+  // Feature flags
+  onlineOrdering  Boolean  @default(false)
+  customDomain    Boolean  @default(false)
+  customMailbox   Boolean  @default(false)
+  videoConsults   Boolean  @default(false)
+  marketingTools  Boolean  @default(false)
+  groupManagement Boolean  @default(false)
+  apiAccess       Boolean  @default(false)
+  dedicatedSupport Boolean @default(false)
+  customWebsite   Boolean  @default(false)
+
+  // Feature list (displayed on pricing cards)
+  features        Json     // Array of strings
+
+  // Usage charges
+  consultationFee Float    @default(0.50) // per consultation
+  dispatchFee     Float    @default(1.50) // per dispatch
+  smsFee          Float    @default(0.05) // per SMS
+  paymentUplift   Float    @default(0.5)  // percentage
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
