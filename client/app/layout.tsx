@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
+import { CookieBanner } from '@/components/ui/cookie-banner';
 import "./globals.css";
 
 const inter = Inter({
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans bg-white text-gray-900">
         {children}
         <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontSize: '14px' } }} />
+        <CookieBanner />
       </body>
     </html>
   );

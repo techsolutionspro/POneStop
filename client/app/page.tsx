@@ -450,7 +450,7 @@ export default function LandingPage() {
           </div>
           <div>
             <div className="text-white font-semibold text-sm mb-3">Legal</div>
-            <div className="space-y-2 text-xs"><a href="#" className="block hover:text-white">Privacy Policy</a><a href="#" className="block hover:text-white">Terms of Service</a><a href="#" className="block hover:text-white">Cookie Policy</a><a href="#" className="block hover:text-white">GDPR</a></div>
+            <div className="space-y-2 text-xs"><Link href="/privacy" className="block hover:text-white">Privacy Policy</Link><Link href="/terms" className="block hover:text-white">Terms of Service</Link><Link href="/cookies" className="block hover:text-white">Cookie Policy</Link><Link href="/complaints" className="block hover:text-white">Complaints</Link><Link href="/gdpr" className="block hover:text-white">GDPR</Link></div>
           </div>
         </div>
         <div className="max-w-5xl mx-auto pt-6 border-t border-gray-800 flex items-center justify-between text-xs">
