@@ -6,10 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
-import { Plus, X, Stethoscope } from 'lucide-react';
+import { Plus, X, Stethoscope, ExternalLink, TrendingUp, ShoppingBag, Calendar, BarChart3 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
+import { useAuthStore } from '@/lib/auth-store';
 
 export default function ServicesPage() {
+  const { user } = useAuthStore();
+  const tenantSlug = user?.tenant?.slug;
   const [services, setServices] = useState<any[]>([]);
   const [pgds, setPgds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,11 +49,36 @@ export default function ServicesPage() {
     setForm(f => ({ ...f, fulfilmentModes: f.fulfilmentModes.includes(m) ? f.fulfilmentModes.filter(x => x !== m) : [...f.fulfilmentModes, m] }));
   }
 
+  const activeServices = services.filter((s: any) => s.isActive);
+  const totalBookings = services.reduce((sum: number, s: any) => sum + (s._count?.bookings || 0), 0);
+  const totalOrders = services.reduce((sum: number, s: any) => sum + (s._count?.onlineOrders || 0), 0);
+  const totalRevenue = services.reduce((sum: number, s: any) => sum + ((s._count?.onlineOrders || 0) + (s._count?.bookings || 0)) * (s.price || 0), 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold">Services</h1><p className="text-sm text-gray-500 mt-1">Manage clinical services offered at your pharmacy</p></div>
         <Button onClick={() => setShowAdd(true)}><Plus className="w-4 h-4" /> Add Service</Button>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0"><Stethoscope className="w-5 h-5" /></div>
+          <div><div className="text-2xl font-bold text-gray-900">{activeServices.length}</div><div className="text-xs text-gray-500">Active Services</div></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0"><Calendar className="w-5 h-5" /></div>
+          <div><div className="text-2xl font-bold text-gray-900">{totalBookings}</div><div className="text-xs text-gray-500">Total Bookings</div></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0"><ShoppingBag className="w-5 h-5" /></div>
+          <div><div className="text-2xl font-bold text-gray-900">{totalOrders}</div><div className="text-xs text-gray-500">Online Orders</div></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0"><BarChart3 className="w-5 h-5" /></div>
+          <div><div className="text-2xl font-bold text-gray-900">{formatCurrency(totalRevenue)}</div><div className="text-xs text-gray-500">Est. Revenue</div></div>
+        </div>
       </div>
 
       {showAdd && (
@@ -96,20 +125,50 @@ export default function ServicesPage() {
               </div>
               {s.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{s.description}</p>}
               <div className="flex flex-wrap gap-1.5 mb-3">{s.fulfilmentModes?.map((m: string) => (<span key={m} className="px-2 py-0.5 bg-teal-50 text-teal-700 rounded-full text-[10px] font-medium">{m.replace(/_/g, ' ')}</span>))}</div>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                <div><span className="text-lg font-bold text-teal-700">{formatCurrency(s.price)}</span>{s.duration && <span className="text-xs text-gray-400 ml-1">/ {s.duration} min</span>}</div>
-                <div className="flex gap-1"><span className="text-xs text-gray-400">{s._count?.bookings || 0} bookings</span><span className="text-xs text-gray-400">| {s._count?.onlineOrders || 0} orders</span></div>
+              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 mb-3">
+                <div className="bg-blue-50 rounded-lg px-3 py-2 text-center">
+                  <div className="text-lg font-bold text-blue-700">{s._count?.bookings || 0}</div>
+                  <div className="text-[10px] text-blue-500 font-medium">Bookings</div>
+                </div>
+                <div className="bg-indigo-50 rounded-lg px-3 py-2 text-center">
+                  <div className="text-lg font-bold text-indigo-700">{s._count?.onlineOrders || 0}</div>
+                  <div className="text-[10px] text-indigo-500 font-medium">Orders</div>
+                </div>
               </div>
-              <div className="flex gap-2 mt-3"><Button variant="outline" size="sm" className="flex-1">Edit</Button><Button variant={s.isActive ? 'danger' : 'success'} size="sm" className="flex-1" onClick={() => toggleService(s.id, s.isActive)}>{s.isActive ? 'Deactivate' : 'Activate'}</Button></div>
+              <div className="flex items-center justify-between mb-3">
+                <div><span className="text-lg font-bold text-teal-700">{formatCurrency(s.price)}</span>{s.duration && <span className="text-xs text-gray-400 ml-1">/ {s.duration} min</span>}</div>
+                {tenantSlug && s.isActive && (
+                  <Link href={`/pharmacy/${tenantSlug}`} target="_blank" className="inline-flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium">
+                    <ExternalLink className="w-3 h-3" /> View on Storefront
+                  </Link>
+                )}
+              </div>
+              <div className="flex gap-2"><Button variant="outline" size="sm" className="flex-1">Edit</Button><Button variant={s.isActive ? 'danger' : 'success'} size="sm" className="flex-1" onClick={() => toggleService(s.id, s.isActive)}>{s.isActive ? 'Deactivate' : 'Activate'}</Button></div>
             </div>
           </Card>
         ))}
         {services.length === 0 && !loading && (
-          <div className="col-span-full flex flex-col items-center py-16 text-center">
-            <Stethoscope className="w-12 h-12 text-gray-300 mb-4" />
-            <h3 className="text-base font-semibold">No services yet</h3>
-            <p className="text-sm text-gray-500 mt-1">Activate your first clinical service from the PGD library.</p>
-            <Button className="mt-4" onClick={() => setShowAdd(true)}>Add Service</Button>
+          <div className="col-span-full bg-white rounded-xl border border-gray-200 p-10 text-center">
+            <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Stethoscope className="w-10 h-10 text-teal-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No services yet</h3>
+            <p className="text-sm text-gray-500 max-w-md mx-auto mb-8">Get started by activating your first clinical service. Follow the steps below to go live on your storefront.</p>
+            <div className="max-w-sm mx-auto text-left space-y-4 mb-8">
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                <div><div className="text-sm font-semibold text-gray-900">Review the PGD Library</div><div className="text-xs text-gray-500 mt-0.5">Ensure your PGDs are published and approved by the clinical team.</div></div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                <div><div className="text-sm font-semibold text-gray-900">Activate a Service</div><div className="text-xs text-gray-500 mt-0.5">Click &quot;Add Service&quot; above, select a PGD, set pricing and fulfilment modes.</div></div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                <div><div className="text-sm font-semibold text-gray-900">Go Live</div><div className="text-xs text-gray-500 mt-0.5">Your service will appear on the public storefront for patients to book or order.</div></div>
+              </div>
+            </div>
+            <Button size="lg" onClick={() => setShowAdd(true)}><Plus className="w-4 h-4" /> Add Your First Service</Button>
           </div>
         )}
       </div>

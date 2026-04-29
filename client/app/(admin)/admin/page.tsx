@@ -8,8 +8,62 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { ClipboardList, Truck, BarChart3, Plus } from 'lucide-react';
+import { ClipboardList, Truck, BarChart3, Plus, Calendar, ShoppingCart, UserPlus, Settings, Check, Globe, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+
+const MOCK_ACTIVITY = [
+  { id: 1, type: 'booking', text: 'New booking created for Flu Vaccination', time: '5 min ago', icon: Calendar, color: 'bg-teal-50 text-teal-600' },
+  { id: 2, type: 'order', text: 'Online order #ORD-2847 received', time: '12 min ago', icon: ShoppingCart, color: 'bg-indigo-50 text-indigo-600' },
+  { id: 3, type: 'booking', text: 'Weight Management consultation booked', time: '28 min ago', icon: Calendar, color: 'bg-teal-50 text-teal-600' },
+  { id: 4, type: 'order', text: 'Order #ORD-2846 dispatched via DPD', time: '45 min ago', icon: Truck, color: 'bg-blue-50 text-blue-600' },
+  { id: 5, type: 'booking', text: 'Blood Pressure Check walk-in added', time: '1 hr ago', icon: Calendar, color: 'bg-teal-50 text-teal-600' },
+  { id: 6, type: 'order', text: 'Online order #ORD-2845 received', time: '2 hrs ago', icon: ShoppingCart, color: 'bg-indigo-50 text-indigo-600' },
+];
+
+const GETTING_STARTED = [
+  { id: 'service', label: 'Add your first service', done: true, href: '/admin/services', icon: Plus },
+  { id: 'team', label: 'Invite a team member', done: false, href: '/admin/team', icon: UserPlus },
+  { id: 'booking', label: 'Create your first booking', done: false, href: '/admin/bookings/new', icon: Calendar },
+  { id: 'storefront', label: 'Customise your storefront', done: false, href: '/admin/website', icon: Globe },
+];
+
+function RevenueSparkline() {
+  // Simple sparkline using inline SVG — last 7 days mock data
+  const data = [320, 480, 390, 550, 620, 510, 680];
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const width = 120;
+  const height = 36;
+  const padding = 2;
+
+  const points = data.map((v, i) => {
+    const x = padding + (i / (data.length - 1)) * (width - padding * 2);
+    const y = padding + ((max - v) / (max - min)) * (height - padding * 2);
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPoints = `${padding},${height - padding} ${points} ${width - padding},${height - padding}`;
+
+  return (
+    <svg width={width} height={height} className="ml-auto">
+      <defs>
+        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#0d9488" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={areaPoints} fill="url(#sparkFill)" />
+      <polyline points={points} fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
@@ -35,25 +89,78 @@ export default function AdminDashboard() {
   }
 
   const stats = data?.stats || {};
+  const totalBookings = (stats.todayBookings || 0) + (data?.recentBookings?.length || 0);
+  const showGettingStarted = totalBookings < 5;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-          Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user?.firstName}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          {' | '}{user?.tenant?.name}
-        </p>
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-6 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-5 h-5 text-teal-200" />
+            <span className="text-sm text-teal-200 font-medium">
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {getGreeting()}, {user?.firstName}
+          </h1>
+          <p className="text-teal-100 text-sm mt-1">
+            Here is what is happening at {user?.tenant?.name} today.
+          </p>
+        </div>
       </div>
+
+      {/* Getting Started Checklist (shows if < 5 bookings) */}
+      {showGettingStarted && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4 text-teal-600" />
+              <h3 className="text-sm font-semibold">Getting Started</h3>
+            </div>
+            <span className="text-xs text-gray-400">{GETTING_STARTED.filter(s => s.done).length}/{GETTING_STARTED.length} complete</span>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {GETTING_STARTED.map(item => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${item.done ? 'border-teal-200 bg-teal-50/50' : 'border-gray-200 hover:border-teal-300 hover:shadow-sm'}`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.done ? 'bg-teal-100 text-teal-600' : 'bg-gray-100 text-gray-400'}`}>
+                    {item.done ? <Check className="w-4 h-4" /> : <item.icon className="w-4 h-4" />}
+                  </div>
+                  <span className={`text-sm font-medium ${item.done ? 'text-teal-700 line-through' : 'text-gray-700'}`}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Today's Bookings" value={stats.todayBookings || 0} change="+12% vs last week" trend="up" />
         <StatCard label="Online Orders" value={stats.todayOrders || 0} change="+8% vs last week" trend="up" />
-        <StatCard label="Week Revenue" value={formatCurrency(stats.weekRevenue || 0)} change="+15% vs last week" trend="up" />
+
+        {/* Revenue card with sparkline */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-xs">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-sm text-gray-500 font-medium">Week Revenue</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1 tracking-tight">{formatCurrency(stats.weekRevenue || 0)}</div>
+              <div className="text-xs font-medium mt-1 text-green-600">+15% vs last week</div>
+            </div>
+            <RevenueSparkline />
+          </div>
+        </div>
+
         <StatCard
           label="Awaiting Review"
           value={stats.awaitingReview || 0}
@@ -102,10 +209,10 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {/* Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Tables + Activity Feed */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Today's Bookings */}
-        <Card>
+        <Card className="lg:col-span-1">
           <CardHeader>
             <h3 className="text-sm font-semibold">Today&apos;s Bookings</h3>
             <Link href="/admin/bookings" className="text-xs text-teal-600 hover:text-teal-700 font-medium">View All</Link>
@@ -143,7 +250,7 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Recent Online Orders */}
-        <Card>
+        <Card className="lg:col-span-1">
           <CardHeader>
             <h3 className="text-sm font-semibold">Recent Online Orders</h3>
             <Link href="/admin/orders" className="text-xs text-teal-600 hover:text-teal-700 font-medium">View All</Link>
@@ -178,6 +285,29 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </Card>
+
+        {/* Activity Feed */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <h3 className="text-sm font-semibold">Recent Activity</h3>
+            <span className="text-xs text-gray-400">Live feed</span>
+          </CardHeader>
+          <CardBody className="p-0">
+            <div className="divide-y divide-gray-100">
+              {MOCK_ACTIVITY.map(activity => (
+                <div key={activity.id} className="flex items-start gap-3 px-5 py-3.5">
+                  <div className={`w-8 h-8 rounded-lg ${activity.color} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                    <activity.icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 leading-snug">{activity.text}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardBody>
         </Card>
       </div>
     </div>

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { Check, ArrowRight, Shield, Globe, Zap, BarChart3, Users, Truck, Star } from 'lucide-react';
+import { Check, ArrowRight, Shield, Globe, Zap, BarChart3, Users, Truck, Star, UserPlus, Settings, Rocket } from 'lucide-react';
 import { packageApi } from '@/lib/api';
 
 const FEATURES = [
@@ -31,14 +31,63 @@ const COMPARISONS = [
   { feature: 'Multi-Branch + SSO', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
 ];
 
+const HOW_IT_WORKS = [
+  { step: 1, icon: UserPlus, title: 'Sign up in 2 minutes', desc: 'Create your account with just your pharmacy name and email. No credit card needed.' },
+  { step: 2, icon: Settings, title: 'Set up in 45 minutes', desc: 'Add your services, configure PGDs, and customise your website with our guided wizard.' },
+  { step: 3, icon: Rocket, title: 'Go live in 24 hours', desc: 'Your branded website is live with booking, payments, and clinical engine ready to go.' },
+];
+
+const TRUSTED_PHARMACIES = [
+  'High Street Pharmacy', 'CareFirst Group', 'MediQuick', 'Wellbeing Pharmacy', 'PharmaCare UK', 'Unity Health'
+];
+
 function CellIcon({ value }: { value: boolean | string }) {
   if (value === true) return <Check className="w-5 h-5 text-green-500 mx-auto" />;
   if (value === false) return <span className="text-gray-300 text-lg mx-auto block text-center">&times;</span>;
   return <span className="text-xs text-yellow-600 mx-auto block text-center">{value}</span>;
 }
 
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const duration = 1500;
+          const startTime = performance.now();
+
+          function animate(currentTime: number) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(animate);
+          }
+
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
+
 export default function LandingPage() {
   const [tiers, setTiers] = useState<any[]>(FALLBACK_TIERS);
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   useEffect(() => {
     packageApi.list()
@@ -46,6 +95,15 @@ export default function LandingPage() {
         if (res.data.data?.length > 0) setTiers(res.data.data);
       })
       .catch(() => {}); // Fall back to hardcoded
+  }, []);
+
+  // Floating CTA: show after scrolling past hero
+  useEffect(() => {
+    function handleScroll() {
+      setShowFloatingCta(window.scrollY > 600);
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -101,17 +159,50 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-gray-400">No credit card required. Cancel anytime. Your data, always.</p>
 
-          {/* Social proof */}
-          <div className="flex items-center justify-center gap-4 mt-10 pt-8 border-t border-gray-200 max-w-md mx-auto">
-            <div className="flex -space-x-2">
-              {['AH', 'SP', 'RK', 'EM'].map((initials, i) => (
-                <div key={i} className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 border-2 border-white flex items-center justify-center text-xs font-bold">{initials}</div>
-              ))}
+          {/* Social proof with animated counters */}
+          <div className="flex items-center justify-center gap-8 mt-10 pt-8 border-t border-gray-200 max-w-lg mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {['AH', 'SP', 'RK', 'EM'].map((initials, i) => (
+                  <div key={i} className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 border-2 border-white flex items-center justify-center text-xs font-bold">{initials}</div>
+                ))}
+              </div>
+              <div className="text-left text-sm">
+                <div className="font-semibold text-gray-900"><AnimatedCounter target={120} suffix="+" /> pharmacies</div>
+                <div className="text-gray-500">across the UK</div>
+              </div>
             </div>
-            <div className="text-left text-sm">
-              <div className="font-semibold text-gray-900">120+ pharmacies</div>
-              <div className="text-gray-500">Avg. £4,200/mo extra revenue</div>
+            <div className="text-left text-sm border-l border-gray-200 pl-8">
+              <div className="font-semibold text-gray-900">&pound;<AnimatedCounter target={4200} />/mo</div>
+              <div className="text-gray-500">avg. extra revenue</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 px-4 bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-3">How it works</h2>
+            <p className="text-gray-500 text-lg">Three simple steps to transform your pharmacy.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {HOW_IT_WORKS.map((item) => (
+              <div key={item.step} className="text-center relative">
+                <div className="w-16 h-16 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="w-7 h-7" />
+                </div>
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full text-6xl font-extrabold text-gray-100 select-none pointer-events-none">{item.step}</div>
+                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">{item.desc}</p>
+                {item.step < 3 && (
+                  <div className="hidden md:block absolute top-8 -right-4 text-gray-300">
+                    <ArrowRight className="w-6 h-6" />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -128,7 +219,7 @@ export default function LandingPage() {
               { name: 'WhatsApp / Phone', desc: 'No audit trail or compliance' },
               { name: 'Paper Diary', desc: 'Double bookings, no reminders' },
               { name: 'Manual Dispatch', desc: 'No tracking or cold-chain' },
-              { name: '£500+/mo Combined', desc: '6 tools that don\'t talk' },
+              { name: '\u00A3500+/mo Combined', desc: '6 tools that don\'t talk' },
             ].map(p => (
               <div key={p.name} className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
                 <div className="text-sm font-semibold text-white/70 line-through mb-1">{p.name}</div>
@@ -202,7 +293,7 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-center mb-12">Trusted by pharmacies across the UK</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { text: 'We went from zero online presence to £6,000/month in weight-loss orders within 8 weeks. The onboarding was done in an afternoon.', name: 'Dr. Amir Hussain', role: 'Owner, High Street Pharmacy' },
+              { text: 'We went from zero online presence to \u00A36,000/month in weight-loss orders within 8 weeks. The onboarding was done in an afternoon.', name: 'Dr. Amir Hussain', role: 'Owner, High Street Pharmacy' },
               { text: 'We replaced Pharmadoctor, our Wix site, and a booking tool. One login, one bill, everything connected. My team saves 8 hours a week.', name: 'Sarah Patel', role: 'Superintendent, CareFirst' },
               { text: 'The cold-chain dispatch and subscription management is a game-changer. We ship 200+ Wegovy pens a month now.', name: 'Raj Kaur', role: 'Clinical Lead, MediQuick' },
             ].map((t, i) => (
@@ -216,25 +307,65 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Trusted By Logo Bar */}
+      <section className="py-12 px-4 bg-gray-50 border-y border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-sm text-gray-400 font-medium uppercase tracking-wider mb-8">Trusted by leading UK pharmacies</p>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {TRUSTED_PHARMACIES.map((name) => (
+              <div key={name} className="bg-gray-200/50 rounded-lg h-12 flex items-center justify-center px-3">
+                <span className="text-xs font-semibold text-gray-400 text-center leading-tight">{name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-20 px-4 bg-gray-50">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-3">Simple, transparent pricing</h2>
             <p className="text-gray-500">No hidden fees. No contracts. Cancel anytime.</p>
           </div>
+
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-3 mb-10">
+            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-400'}`}>Monthly</span>
+            <button
+              type="button"
+              onClick={() => setBillingPeriod(b => b === 'monthly' ? 'annual' : 'monthly')}
+              className={`relative w-12 h-6 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-teal-600' : 'bg-gray-300'}`}
+              aria-label="Toggle billing period"
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-6' : ''}`} />
+            </button>
+            <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-400'}`}>Annual</span>
+            {billingPeriod === 'annual' && (
+              <span className="text-xs bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">Save 20%</span>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tiers.map((t: any) => {
               const features = Array.isArray(t.features) ? t.features : [];
               const popular = t.isPopular || false;
+              const monthlyPrice = t.price;
+              const annualMonthlyPrice = Math.round(monthlyPrice * 0.8);
+              const displayPrice = billingPeriod === 'annual' ? annualMonthlyPrice : monthlyPrice;
               return (
                 <div key={t.name} className={`bg-white rounded-2xl p-7 relative ${popular ? 'border-2 border-teal-500 shadow-lg' : 'border border-gray-200'}`}>
                   {popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>}
                   <div className="text-lg font-bold mb-1">{t.name}</div>
                   <div className="text-sm text-gray-500 mb-5">{t.description}</div>
                   <div className="mb-6">
-                    <span className="text-4xl font-extrabold">£{t.price}</span><span className="text-gray-400">/month</span>
-                    {t.annualPrice && <div className="text-xs text-teal-600 mt-1">or £{t.annualPrice}/year (save {Math.round((1 - t.annualPrice / (t.price * 12)) * 100)}%)</div>}
+                    <span className="text-4xl font-extrabold">&pound;{displayPrice}</span><span className="text-gray-400">/month</span>
+                    {billingPeriod === 'annual' && (
+                      <div className="text-xs text-teal-600 mt-1">
+                        <span className="line-through text-gray-400">&pound;{monthlyPrice}/mo</span> &mdash; billed &pound;{annualMonthlyPrice * 12}/year
+                      </div>
+                    )}
+                    {billingPeriod === 'monthly' && t.annualPrice && <div className="text-xs text-teal-600 mt-1">or &pound;{t.annualPrice}/year (save {Math.round((1 - t.annualPrice / (t.price * 12)) * 100)}%)</div>}
                   </div>
                   <div className="space-y-2.5 mb-7">
                     {features.map((f: string) => (
@@ -252,7 +383,7 @@ export default function LandingPage() {
           </div>
           <p className="text-center text-xs text-gray-400 mt-6">
             All plans include: Stripe payments, clinical audit trail, GDPR compliance, WCAG 2.1 AA.
-            {tiers[0]?.consultationFee && ` Additional: £${tiers[0].consultationFee}/consultation, £${tiers[0].dispatchFee}/dispatch, £${tiers[0].smsFee}/SMS.`}
+            {tiers[0]?.consultationFee && ` Additional: \u00A3${tiers[0].consultationFee}/consultation, \u00A3${tiers[0].dispatchFee}/dispatch, \u00A3${tiers[0].smsFee}/SMS.`}
           </p>
         </div>
       </section>
@@ -327,6 +458,18 @@ export default function LandingPage() {
           <span>Built by TSP</span>
         </div>
       </footer>
+
+      {/* Floating CTA (mobile only) */}
+      {showFloatingCta && (
+        <div className="fixed bottom-4 right-4 z-50 md:hidden">
+          <Link
+            href="/signup"
+            className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white text-sm font-semibold rounded-full shadow-lg hover:bg-teal-700 transition-all"
+          >
+            Start Free Trial <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

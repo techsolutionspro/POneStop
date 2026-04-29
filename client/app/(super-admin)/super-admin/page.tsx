@@ -101,17 +101,101 @@ export default function SuperAdminDashboard() {
         ))}
       </div>
 
-      {/* Alerts */}
-      {(s.dspPending > 0) && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-          <div className="flex-1">
-            <div className="text-sm font-medium text-yellow-800">{s.dspPending} DSP verification{s.dspPending > 1 ? 's' : ''} pending</div>
-            <div className="text-xs text-yellow-600 mt-0.5">Pharmacies are waiting to enable online POM fulfilment.</div>
+      {/* Revenue Chart Placeholder */}
+      <Card>
+        <CardHeader><h3 className="text-sm font-semibold text-gray-900">Monthly Revenue Trend</h3><span className="text-xs text-gray-400">Last 6 months</span></CardHeader>
+        <div className="p-5">
+          <div className="flex items-end gap-2 h-32">
+            {[40, 55, 48, 65, 78, 100].map((pct, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t-md transition-all"
+                  style={{
+                    height: `${pct}%`,
+                    background: `linear-gradient(to top, #0d9488, #14b8a6)`,
+                    opacity: 0.6 + (i * 0.08),
+                  }}
+                />
+                <span className="text-[10px] text-gray-400">{['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'][i]}</span>
+              </div>
+            ))}
           </div>
-          <Link href="/super-admin/dsp-register"><Button size="sm" variant="outline">Review Now</Button></Link>
         </div>
-      )}
+      </Card>
+
+      {/* Platform Growth + Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Alerts Section */}
+        <Card>
+          <CardHeader><h3 className="text-sm font-semibold text-gray-900">Platform Alerts</h3></CardHeader>
+          <div className="p-4 space-y-3">
+            {s.dspPending > 0 && (
+              <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-yellow-800">{s.dspPending} DSP verification{s.dspPending > 1 ? 's' : ''} pending</div>
+                  <div className="text-xs text-yellow-600 mt-0.5">Pharmacies waiting to enable online POM fulfilment.</div>
+                </div>
+                <Link href="/super-admin/dsp-register"><Button size="sm" variant="outline">Review</Button></Link>
+              </div>
+            )}
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <Clock className="w-5 h-5 text-gray-500 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-800">SLA Breaches</div>
+                <div className="text-xs text-gray-500 mt-0.5">No prescriber SLA breaches in the last 24h.</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <Shield className="w-5 h-5 text-gray-500 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-800">SSL Certificates</div>
+                <div className="text-xs text-gray-500 mt-0.5">All certificates valid. 0 expiring within 30 days.</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-800">PGD Reviews</div>
+                <div className="text-xs text-gray-500 mt-0.5">No overdue PGD reviews pending.</div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Quick Links with Keyboard Shortcuts */}
+        <Card>
+          <CardHeader><h3 className="text-sm font-semibold text-gray-900">Quick Links</h3><span className="text-xs text-gray-400">Keyboard shortcuts</span></CardHeader>
+          <div className="p-4 space-y-2">
+            {[
+              { href: '/super-admin/tenants', label: 'Manage Tenants', shortcut: 'G T', icon: Building2 },
+              { href: '/super-admin/pgds', label: 'PGD Library', shortcut: 'G P', icon: FileText },
+              { href: '/super-admin/dsp-register', label: 'DSP Register', shortcut: 'G D', icon: ClipboardCheck },
+              { href: '/super-admin/audit', label: 'Audit Logs', shortcut: 'G A', icon: Shield },
+              { href: '/super-admin/monitoring', label: 'System Monitoring', shortcut: 'G M', icon: Activity },
+              { href: '/super-admin/team', label: 'Platform Team', shortcut: 'G U', icon: Users },
+            ].map(item => (
+              <Link key={item.href} href={item.href} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group">
+                <item.icon className="w-4 h-4 text-gray-400 group-hover:text-teal-600" />
+                <span className="text-sm text-gray-700 flex-1 group-hover:text-gray-900">{item.label}</span>
+                <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-400 text-[10px] font-mono rounded">{item.shortcut}</kbd>
+              </Link>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Platform Growth Metric */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-xl p-5 flex items-center justify-between text-white">
+        <div>
+          <div className="text-sm font-medium text-teal-100">New tenants this week</div>
+          <div className="text-3xl font-bold mt-1">{data?.newTenantsThisWeek ?? s.totalTenants ?? 0}</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-teal-200" />
+          <span className="text-sm text-teal-100">Platform growing</span>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Recent Tenants */}

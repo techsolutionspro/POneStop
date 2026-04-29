@@ -7,14 +7,16 @@ import { useAuthStore } from '@/lib/auth-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { Check, ArrowRight, Shield, Globe, Zap } from 'lucide-react';
+import { Check, ArrowRight, Shield, Globe, Zap, Lock } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
   const { setUser } = useAuthStore();
   const [step, setStep] = useState(1);
+  const [stepDirection, setStepDirection] = useState<'forward' | 'back'>('forward');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [form, setForm] = useState({
     pharmacyName: '',
     firstName: '',
@@ -68,6 +70,7 @@ export default function SignupPage() {
     e.preventDefault();
     if (step === 1) {
       if (!validateStep1()) return;
+      setStepDirection('forward');
       setStep(2);
       return;
     }
@@ -138,7 +141,7 @@ export default function SignupPage() {
 
             {/* STEP 1: Details */}
             {step === 1 && (
-              <div className="space-y-4">
+              <div className={`space-y-4 ${stepDirection === 'back' ? 'step-enter-back' : 'step-enter'}`}>
                 <h2 className="text-2xl font-bold text-gray-900">Start your free trial</h2>
                 <p className="text-sm text-gray-500 mb-6">14 days free, no credit card required. Set up in under 45 minutes.</p>
 
@@ -197,25 +200,48 @@ export default function SignupPage() {
 
             {/* STEP 2: Choose Plan */}
             {step === 2 && (
-              <div className="space-y-4">
+              <div className={`space-y-4 ${stepDirection === 'forward' ? 'step-enter' : 'step-enter-back'}`}>
                 <h2 className="text-2xl font-bold text-gray-900">Choose your plan</h2>
                 <p className="text-sm text-gray-500 mb-2">All plans include a 14-day free trial. Upgrade or downgrade anytime.</p>
+
+                {/* Billing period toggle */}
+                <div className="flex items-center justify-center gap-3 py-2">
+                  <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-400'}`}>Monthly</span>
+                  <button
+                    type="button"
+                    onClick={() => setBillingPeriod(b => b === 'monthly' ? 'annual' : 'monthly')}
+                    className={`relative w-11 h-6 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-teal-600' : 'bg-gray-300'}`}
+                    aria-label="Toggle billing period"
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-5' : ''}`} />
+                  </button>
+                  <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-400'}`}>Annual</span>
+                  {billingPeriod === 'annual' && (
+                    <span className="text-xs bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">Save 20%</span>
+                  )}
+                </div>
 
                 <div className="space-y-3">
                   {tiers.map((t: any) => {
                     const tierId = t.tier || t.id;
                     const features = Array.isArray(t.features) ? t.features : [];
+                    const monthlyPrice = t.price;
+                    const annualMonthlyPrice = Math.round(monthlyPrice * 0.8);
+                    const displayPrice = billingPeriod === 'annual' ? annualMonthlyPrice : monthlyPrice;
                     return (
                       <button key={tierId} type="button" onClick={() => update('tier', tierId)}
                         className={`w-full text-left border-2 rounded-xl p-4 transition-all ${form.tier === tierId ? 'border-teal-500 bg-teal-50/50 ring-1 ring-teal-500' : 'border-gray-200 hover:border-gray-300'}`}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-gray-900">{t.name}</span>
-                            {t.isPopular && <span className="text-[10px] bg-teal-600 text-white px-2 py-0.5 rounded-full font-medium">POPULAR</span>}
+                            {t.isPopular && <span className="text-[10px] bg-teal-600 text-white px-2 py-0.5 rounded-full font-medium badge-pulse">POPULAR</span>}
                           </div>
                           <div className="text-right">
-                            <span className="text-xl font-bold text-gray-900">&pound;{t.price}</span>
+                            <span className="text-xl font-bold text-gray-900">&pound;{displayPrice}</span>
                             <span className="text-xs text-gray-400">/month</span>
+                            {billingPeriod === 'annual' && (
+                              <div className="text-[10px] text-teal-600 line-through inline ml-1">&pound;{monthlyPrice}</div>
+                            )}
                           </div>
                         </div>
                         <p className="text-xs text-gray-500 mb-2">{t.description}</p>
@@ -232,7 +258,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => { setStepDirection('back'); setStep(1); }}>
                     Back
                   </Button>
                   <Button type="submit" className="flex-1" size="lg" disabled={loading}>
@@ -243,6 +269,20 @@ export default function SignupPage() {
                 <p className="text-xs text-gray-400 text-center">
                   No credit card required. Cancel anytime. Your data is always yours.
                 </p>
+
+                {/* Trust badges */}
+                <div className="flex items-center justify-center gap-4 pt-2">
+                  {[
+                    { icon: Shield, label: 'GPhC Compliant' },
+                    { icon: Lock, label: 'GDPR Secure' },
+                    { icon: Check, label: 'Cancel Anytime' },
+                  ].map(badge => (
+                    <div key={badge.label} className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <badge.icon className="w-3.5 h-3.5 text-teal-500" />
+                      <span>{badge.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </form>
@@ -286,7 +326,7 @@ export default function SignupPage() {
             <div className="text-sm"><strong>120+ pharmacies</strong> already growing with us</div>
           </div>
           <p className="text-sm text-teal-300 italic">&ldquo;We went from zero online presence to &pound;6,000/month in weight-loss orders within 8 weeks.&rdquo;</p>
-          <p className="text-xs text-teal-400 mt-1">— Dr. Amir Hussain, High Street Pharmacy</p>
+          <p className="text-xs text-teal-400 mt-1">&mdash; Dr. Amir Hussain, High Street Pharmacy</p>
         </div>
       </div>
     </div>
