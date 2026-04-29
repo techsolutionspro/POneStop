@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="96" fill="#0d9488"/>
+
+  <!-- Pharmacy cross -->
+  <rect x="75" y="40" width="50" height="120" rx="8" fill="white"/>
+  <rect x="40" y="75" width="120" height="50" rx="8" fill="white"/>
+
+  <!-- Inner teal cross detail -->
+  <rect x="83" y="48" width="34" height="104" rx="4" fill="#0d9488" opacity="0.15"/>
+  <rect x="48" y="83" width="104" height="34" rx="4" fill="#0d9488" opacity="0.15"/>
+
+  <!-- Digital dot pattern (representing tech/digital) -->
+  <circle cx="100" cy="100" r="6" fill="#0d9488"/>
+  <circle cx="100" cy="65" r="3" fill="#0d9488" opacity="0.6"/>
+  <circle cx="100" cy="135" r="3" fill="#0d9488" opacity="0.6"/>
+  <circle cx="65" cy="100" r="3" fill="#0d9488" opacity="0.6"/>
+  <circle cx="135" cy="100" r="3" fill="#0d9488" opacity="0.6"/>
+
+  <!-- "1" indicator -->
+  <circle cx="155" cy="45" r="22" fill="#115e59"/>
+  <text x="155" y="53" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="28" fill="white">1</text>
+</svg>
