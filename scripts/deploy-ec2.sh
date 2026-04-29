@@ -50,14 +50,14 @@ JWT_EXPIRES_IN="15m"
 JWT_REFRESH_EXPIRES_IN="7d"
 PORT=4000
 NODE_ENV=production
-FRONTEND_URL="http://YOUR_DOMAIN_OR_IP"
+FRONTEND_URL="http://63.181.137.168"
 ENVEOF
   echo "  Created server/.env — EDIT THIS with your real values!"
 fi
 
 if [ ! -f client/.env.local ]; then
   cat > client/.env.local << 'ENVEOF'
-NEXT_PUBLIC_API_URL=http://YOUR_DOMAIN_OR_IP/api
+NEXT_PUBLIC_API_URL=http://63.181.137.168/api
 ENVEOF
   echo "  Created client/.env.local — EDIT THIS with your real domain/IP!"
 fi
