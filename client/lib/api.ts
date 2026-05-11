@@ -152,4 +152,7 @@ export const packageApi = {
   create: (data: any) => api.post('/packages', data),
   update: (id: string, data: any) => api.put(`/packages/${id}`, data),
   delete: (id: string) => api.delete(`/packages/${id}`),
+  myPlan: () => api.get('/packages/my-plan'),
+  subscribe: (packageId: string) => api.post('/packages/subscribe', { packageId }),
+  billingPortal: () => api.post('/packages/billing-portal'),
 };

@@ -241,9 +241,14 @@ model Tenant {
   customDomain      String?          @unique
   subdomain         String?          @unique
 
-  // Stripe
+  // Stripe (Connect — for patient payments to pharmacy)
   stripeAccountId   String?
+  // Stripe (Billing — pharmacy pays us for the platform)
   stripeCustomerId  String?
+  stripeSubscriptionId String?
+  stripeSubscriptionStatus String? // active, trialing, past_due, canceled
+  trialEndsAt       DateTime?
+  currentPeriodEnd  DateTime?
 
   // Onboarding
   onboardingStep    Int              @default(0)
@@ -837,6 +842,11 @@ model Package {
   dispatchFee     Float    @default(1.50) // per dispatch
   smsFee          Float    @default(0.05) // per SMS
   paymentUplift   Float    @default(0.5)  // percentage
+
+  // Stripe integration
+  stripeProductId String?  // Stripe product ID
+  stripePriceId   String?  // Stripe monthly price ID
+  stripeAnnualPriceId String? // Stripe annual price ID
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
