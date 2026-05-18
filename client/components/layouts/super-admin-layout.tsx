@@ -16,7 +16,6 @@ const navItems = [
     { href: '/super-admin/tenants', icon: Building2, label: 'Tenants' },
   ]},
   { label: 'Clinical', items: [
-    { href: '/super-admin/pgds', icon: FileText, label: 'PGD Library' },
     { href: '/super-admin/dsp-register', icon: ClipboardCheck, label: 'DSP Register' },
   ]},
   { label: 'Platform', items: [

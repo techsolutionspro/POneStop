@@ -91,8 +91,8 @@ export default function SignupPage() {
   }
 
   const [tiers, setTiers] = useState([
-    { id: 'STARTER', tier: 'STARTER', name: 'Starter', price: 99, description: '1 branch, 20 PGDs, template site', features: ['1 branch', 'Template website', 'Up to 20 PGDs', 'Booking engine', 'Stripe payments'], isPopular: false, ctaText: 'Start Free Trial' },
-    { id: 'PROFESSIONAL', tier: 'PROFESSIONAL', name: 'Professional', price: 199, description: 'Full platform with online ordering', features: ['Up to 3 branches', 'Full 100+ PGD library', 'Online ordering + delivery', 'Custom domain + mailbox', 'Marketing tools'], isPopular: true, ctaText: 'Start Free Trial' },
+    { id: 'STARTER', tier: 'STARTER', name: 'Starter', price: 99, description: '1 branch, template site, bookings + payments', features: ['1 branch', 'Template website', 'Up to 20 services', 'Booking engine', 'Stripe payments'], isPopular: false, ctaText: 'Start Free Trial' },
+    { id: 'PROFESSIONAL', tier: 'PROFESSIONAL', name: 'Professional', price: 199, description: 'Full platform with online ordering', features: ['Up to 3 branches', 'Full service library', 'Online ordering + delivery', 'Custom domain + mailbox', 'Marketing tools'], isPopular: true, ctaText: 'Start Free Trial' },
     { id: 'ENTERPRISE', tier: 'ENTERPRISE', name: 'Enterprise', price: 399, description: 'For pharmacy groups', features: ['Unlimited branches + SSO', 'Custom website design', 'Video consultations', 'Group benchmarking', 'Dedicated account manager'], isPopular: false, ctaText: 'Book a Demo' },
   ] as any[]);
 
@@ -302,7 +302,7 @@ export default function SignupPage() {
           {[
             { icon: Zap, title: 'Go live in 24 hours', desc: 'Template website with booking, payments, and clinical engine — ready same day.' },
             { icon: Globe, title: 'Your brand, everywhere', desc: 'Custom domain, branded emails and SMS. Patients never see our name.' },
-            { icon: Shield, title: 'GPhC compliant', desc: '100+ PGDs, clinical audit trail, MHRA-ready. Built for inspections.' },
+            { icon: Shield, title: 'GPhC compliant', desc: 'Clinical audit trail, MHRA-ready, GDPR compliant. Built for inspections.' },
           ].map(b => (
             <div key={b.title} className="flex gap-4">
               <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">

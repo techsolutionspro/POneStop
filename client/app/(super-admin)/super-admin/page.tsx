@@ -10,7 +10,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
 import {
-  Building2, FileText, ClipboardCheck, Shield, Users, BarChart3,
+  Building2, FileText, ClipboardCheck, Shield, Users, BarChart3, Sliders,
   AlertTriangle, TrendingUp, Globe, CreditCard, Activity, Clock,
   CheckCircle, XCircle, Truck, ShoppingBag, Calendar,
 } from 'lucide-react';
@@ -85,10 +85,10 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-6 gap-3">
         {[
           { href: '/super-admin/tenants', icon: Building2, label: 'Tenants', desc: `${s.totalTenants || 0} total`, color: 'bg-teal-50 text-teal-600' },
-          { href: '/super-admin/pgds', icon: FileText, label: 'PGD Library', desc: `${s.publishedPgds || 0} published`, color: 'bg-indigo-50 text-indigo-600' },
           { href: '/super-admin/dsp-register', icon: ClipboardCheck, label: 'DSP Register', desc: `${s.dspPending || 0} pending`, color: s.dspPending > 0 ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600' },
           { href: '/super-admin/audit', icon: Shield, label: 'Audit Logs', desc: 'View activity', color: 'bg-gray-100 text-gray-600' },
           { href: '/super-admin/team', icon: Users, label: 'Platform Team', desc: 'Manage admins', color: 'bg-blue-50 text-blue-600' },
+          { href: '/super-admin/tiers', icon: Sliders, label: 'Packages', desc: 'Manage tiers', color: 'bg-indigo-50 text-indigo-600' },
           { href: '/super-admin/monitoring', icon: Activity, label: 'Monitoring', desc: 'System health', color: 'bg-emerald-50 text-emerald-600' },
         ].map(item => (
           <Link key={item.href} href={item.href} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-teal-300 transition-all">

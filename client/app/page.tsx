@@ -6,7 +6,7 @@ import { Check, ArrowRight, Shield, Globe, Zap, BarChart3, Users, Truck, Star, U
 import { packageApi } from '@/lib/api';
 
 const FEATURES = [
-  { icon: Shield, title: 'Clinical Services Engine', desc: '100+ ready-made PGDs, guided eConsultation tool, consent capture, and immutable clinical audit trail.', color: 'bg-teal-50 text-teal-600' },
+  { icon: Shield, title: 'Clinical Services Management', desc: 'Manage consultations, bookings, consent capture, and immutable clinical audit trail — all in one place.', color: 'bg-teal-50 text-teal-600' },
   { icon: Globe, title: 'Pharmacy Website Builder', desc: 'Mobile-first templates with drag-and-drop editor. Booking engine, payments, and patient intake baked in.', color: 'bg-indigo-50 text-indigo-600' },
   { icon: Zap, title: 'White-Label & Domains', desc: 'Your domain, your brand everywhere. Automated DNS, SSL, branded emails, SMS, and PDFs.', color: 'bg-amber-50 text-amber-600' },
   { icon: Truck, title: 'Online Orders & Delivery', desc: 'Distance-selling engine with ID verification, prescriber review, cold-chain dispatch, and subscriptions.', color: 'bg-rose-50 text-rose-600' },
@@ -14,13 +14,13 @@ const FEATURES = [
 
 // Fallback tiers (used if API unavailable)
 const FALLBACK_TIERS = [
-  { name: 'Starter', price: 99, description: 'For pharmacies getting started', features: ['1 branch', 'Template website', 'Up to 20 PGDs', 'Booking engine + payments', 'SMS & email reminders'], ctaText: 'Start Free Trial', isPopular: false },
-  { name: 'Professional', price: 199, description: 'Full platform with online ordering', features: ['Up to 3 branches', 'Full 100+ PGD library', 'Online ordering + delivery', 'Custom domain + mailbox', 'Marketing tools + reports'], ctaText: 'Start Free Trial', isPopular: true },
+  { name: 'Starter', price: 99, description: 'For pharmacies getting started', features: ['1 branch', 'Template website', 'Up to 20 services', 'Booking engine + payments', 'SMS & email reminders'], ctaText: 'Start Free Trial', isPopular: false },
+  { name: 'Professional', price: 199, description: 'Full platform with online ordering', features: ['Up to 3 branches', 'Full service library', 'Online ordering + delivery', 'Custom domain + mailbox', 'Marketing tools + reports'], ctaText: 'Start Free Trial', isPopular: true },
   { name: 'Enterprise', price: 399, description: 'For pharmacy groups', features: ['Unlimited branches + SSO', 'Custom website design', 'Video consultations', 'Group benchmarking', 'Dedicated account manager'], ctaText: 'Book a Demo', isPopular: false },
 ];
 
 const COMPARISONS = [
-  { feature: '100+ PGDs & Clinical Engine', us: true, pharmadoctor: true, deltera: 'Partial', pharmacyMentor: false },
+  { feature: 'Clinical Services Management', us: true, pharmadoctor: true, deltera: 'Partial', pharmacyMentor: false },
   { feature: 'Self-Service Website Builder', us: true, pharmadoctor: false, deltera: 'Partial', pharmacyMentor: false },
   { feature: 'Online Ordering + Home Delivery', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
   { feature: 'ID Verification', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
@@ -33,7 +33,7 @@ const COMPARISONS = [
 
 const HOW_IT_WORKS = [
   { step: 1, icon: UserPlus, title: 'Sign up in 2 minutes', desc: 'Create your account with just your pharmacy name and email. No credit card needed.' },
-  { step: 2, icon: Settings, title: 'Set up in 45 minutes', desc: 'Add your services, configure PGDs, and customise your website with our guided wizard.' },
+  { step: 2, icon: Settings, title: 'Set up in 45 minutes', desc: 'Add your services, set up your team, and customise your website with our guided wizard.' },
   { step: 3, icon: Rocket, title: 'Go live in 24 hours', desc: 'Your branded website is live with booking, payments, and clinical engine ready to go.' },
 ];
 
@@ -147,7 +147,7 @@ export default function LandingPage() {
             One platform to <span className="text-teal-600">launch, run, and scale</span> your pharmacy services
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Replace Pharmadoctor + your website agency + WhatsApp + paper diaries with one subscription. Go live in 24 hours.
+            Replace your website agency + WhatsApp + paper diaries + multiple tools with one subscription. Go live in 24 hours.
           </p>
           <div className="flex gap-3 justify-center mb-6">
             <Link href="/signup" className="px-8 py-3.5 bg-teal-600 text-white text-base font-semibold rounded-xl hover:bg-teal-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
@@ -214,7 +214,7 @@ export default function LandingPage() {
           <p className="text-gray-400 text-lg mb-12 max-w-xl mx-auto">Most pharmacies run services using a patchwork that wastes hours every week.</p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { name: 'Pharmadoctor', desc: 'PGDs but no website or booking' },
+              { name: 'Legacy clinical tools', desc: 'No website, no booking integration' },
               { name: 'Wix / Squarespace', desc: 'Generic site, no clinical tools' },
               { name: 'WhatsApp / Phone', desc: 'No audit trail or compliance' },
               { name: 'Paper Diary', desc: 'Double bookings, no reminders' },
@@ -265,9 +265,9 @@ export default function LandingPage() {
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left px-5 py-4 font-medium text-gray-500 w-1/3">Capability</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Pharmadoctor</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Deltera</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Pharmacy Mentor</th>
+                  <th className="text-center px-3 py-4 font-medium text-gray-500">Clinical Tools</th>
+                  <th className="text-center px-3 py-4 font-medium text-gray-500">Booking Platforms</th>
+                  <th className="text-center px-3 py-4 font-medium text-gray-500">Website Agencies</th>
                   <th className="text-center px-3 py-4 bg-teal-600 text-white font-bold rounded-t-lg">Pharmacy One Stop</th>
                 </tr>
               </thead>
@@ -294,7 +294,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { text: 'We went from zero online presence to \u00A36,000/month in weight-loss orders within 8 weeks. The onboarding was done in an afternoon.', name: 'Dr. Amir Hussain', role: 'Owner, High Street Pharmacy' },
-              { text: 'We replaced Pharmadoctor, our Wix site, and a booking tool. One login, one bill, everything connected. My team saves 8 hours a week.', name: 'Sarah Patel', role: 'Superintendent, CareFirst' },
+              { text: 'We replaced our Wix site, booking tool, and clinical records system. One login, one bill, everything connected. My team saves 8 hours a week.', name: 'Sarah Patel', role: 'Superintendent, CareFirst' },
               { text: 'The cold-chain dispatch and subscription management is a game-changer. We ship 200+ Wegovy pens a month now.', name: 'Raj Kaur', role: 'Clinical Lead, MediQuick' },
             ].map((t, i) => (
               <div key={i} className="bg-white border border-gray-200 rounded-xl p-6">
@@ -397,8 +397,8 @@ export default function LandingPage() {
             ['Can I transfer my existing domain?', 'Yes. Transfer your domain with zero downtime. We handle DNS, SSL, and email setup.'],
             ['Do I need DSP registration for online sales?', 'Yes, for POM products. We verify your GPhC DSP registration before enabling online fulfilment.'],
             ['What happens to my data if I cancel?', 'Your domain and data are always yours. One-click export for patients, bookings, orders, clinical records. No lock-in.'],
-            ['Is it GPhC / MHRA compliant?', 'Yes. PGDs authored by registered professionals. MHRA Internet Pharmacy logo auto-injects. Immutable audit trail. Built for inspections.'],
-            ['I use Pharmadoctor. Can I switch?', 'Yes. Our PGD library covers the same services and more. Most pharmacies switch fully within 2 weeks.'],
+            ['Is it GPhC / MHRA compliant?', 'Yes. Built for compliance from the ground up. MHRA Internet Pharmacy logo auto-injects for online POM services. Immutable audit trail. Ready for inspections.'],
+            ['Can I switch from my current tools?', 'Yes. Most pharmacies migrate fully within 2 weeks. We provide a guided onboarding process and support throughout.'],
           ].map(([q, a]) => (
             <details key={q} className="border-b border-gray-200 py-5 group">
               <summary className="flex items-center justify-between cursor-pointer text-base font-semibold text-gray-900 list-none">
