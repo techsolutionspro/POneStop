@@ -22,4 +22,13 @@ export const env = {
   SMTP_USER: process.env.SMTP_USER || '',
   SMTP_PASS: process.env.SMTP_PASS || '',
   FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@pharmacyonestop.co.uk',
+  // Stripe Identity (IDV)
+  STRIPE_IDENTITY_WEBHOOK_SECRET: process.env.STRIPE_IDENTITY_WEBHOOK_SECRET || '',
+  // Twilio Video
+  TWILIO_API_KEY_SID: process.env.TWILIO_API_KEY_SID || '',
+  TWILIO_API_KEY_SECRET: process.env.TWILIO_API_KEY_SECRET || '',
+  // Domain / SSL
+  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN || '',
+  CLOUDFLARE_ZONE_ID: process.env.CLOUDFLARE_ZONE_ID || '',
+  PLATFORM_DOMAIN: process.env.PLATFORM_DOMAIN || 'pharmacyonestop.co.uk',
 } as const;

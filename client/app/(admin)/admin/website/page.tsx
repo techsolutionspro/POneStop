@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
+import { websiteApi } from '@/lib/api';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { BlockRenderer } from '@/components/website-builder/block-renderer';
 import { BlockEditor } from '@/components/website-builder/block-editor';
@@ -34,6 +36,71 @@ export default function WebsiteBuilderPage() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [history, setHistory] = useState<BlockData[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isPublished, setIsPublished] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load saved config from API on mount
+  useEffect(() => {
+    async function loadWebsite() {
+      try {
+        const res = await websiteApi.get();
+        if (res.data?.data?.blocks && res.data.data.blocks.length > 0) {
+          setBlocks(res.data.data.blocks);
+        }
+        if (res.data?.data?.isPublished) {
+          setIsPublished(true);
+        }
+      } catch (err) {
+        // No saved website yet, keep defaults
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadWebsite();
+  }, []);
+
+  // Save draft (without publishing)
+  async function saveDraft() {
+    setIsSaving(true);
+    try {
+      await websiteApi.save(blocks, {});
+      toast.success('Draft saved!');
+    } catch (err) {
+      toast.error('Failed to save draft');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Save and publish
+  async function saveAndPublish() {
+    setIsSaving(true);
+    try {
+      await websiteApi.save(blocks, {});
+      await websiteApi.publish();
+      setIsPublished(true);
+      toast.success('Website published!');
+    } catch (err) {
+      toast.error('Failed to publish');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Unpublish
+  async function handleUnpublish() {
+    setIsSaving(true);
+    try {
+      await websiteApi.unpublish();
+      setIsPublished(false);
+      toast.success('Website unpublished');
+    } catch (err) {
+      toast.error('Failed to unpublish');
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   const pushHistory = useCallback((newBlocks: BlockData[]) => {
     setHistory(h => [...h.slice(0, historyIndex + 1), newBlocks]);
@@ -131,10 +198,25 @@ export default function WebsiteBuilderPage() {
               <Smartphone className="w-4 h-4 text-gray-600" />
             </button>
           </div>
+          {isPublished && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              <Globe className="w-3 h-3" /> Published
+            </span>
+          )}
           <Button variant={previewMode ? 'primary' : 'outline'} size="sm" onClick={() => setPreviewMode(!previewMode)}>
             <Eye className="w-3.5 h-3.5" /> {previewMode ? 'Edit' : 'Preview'}
           </Button>
-          <Button size="sm"><Save className="w-3.5 h-3.5" /> Publish</Button>
+          <Button variant="outline" size="sm" onClick={saveDraft} disabled={isSaving}>
+            <Save className="w-3.5 h-3.5" /> {isSaving ? 'Saving...' : 'Save Draft'}
+          </Button>
+          {isPublished && (
+            <Button variant="outline" size="sm" onClick={handleUnpublish} disabled={isSaving}>
+              Unpublish
+            </Button>
+          )}
+          <Button size="sm" onClick={saveAndPublish} disabled={isSaving}>
+            <Globe className="w-3.5 h-3.5" /> {isSaving ? 'Publishing...' : 'Publish'}
+          </Button>
         </div>
       </div>
 
@@ -249,7 +331,7 @@ export default function WebsiteBuilderPage() {
               </div>
               <div className="text-right">
                 <div>&copy; 2026 {pharmacyName}</div>
-                <div className="mt-1">Powered by Pharmacy One Stop</div>
+                <div className="mt-1">All rights reserved</div>
               </div>
             </div>
           </div>

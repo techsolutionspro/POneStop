@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "P1S Pharmacy",
+    "slug": "p1s-pharmacy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "p1spharmacy",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0d9488",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pharmacyonestop.pharmacy"
+    },
+    "android": {
+      "package": "com.pharmacyonestop.pharmacy"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      "expo-secure-store"
+    ]
+  }
+}

@@ -1,475 +1,276 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Check, ArrowRight, Shield, Globe, Zap, BarChart3, Users, Truck, Star, UserPlus, Settings, Rocket } from 'lucide-react';
-import { packageApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { Search, MapPin, Star, Clock, Truck, Shield, ChevronRight, Pill, Stethoscope, Heart, Syringe, ArrowRight } from 'lucide-react';
+import { marketplaceApi } from '@/lib/api';
 
-const FEATURES = [
-  { icon: Shield, title: 'Clinical Services Management', desc: 'Manage consultations, bookings, consent capture, and immutable clinical audit trail — all in one place.', color: 'bg-teal-50 text-teal-600' },
-  { icon: Globe, title: 'Pharmacy Website Builder', desc: 'Mobile-first templates with drag-and-drop editor. Booking engine, payments, and patient intake baked in.', color: 'bg-indigo-50 text-indigo-600' },
-  { icon: Zap, title: 'White-Label & Domains', desc: 'Your domain, your brand everywhere. Automated DNS, SSL, branded emails, SMS, and PDFs.', color: 'bg-amber-50 text-amber-600' },
-  { icon: Truck, title: 'Online Orders & Delivery', desc: 'Distance-selling engine with ID verification, prescriber review, cold-chain dispatch, and subscriptions.', color: 'bg-rose-50 text-rose-600' },
-];
-
-// Fallback tiers (used if API unavailable)
-const FALLBACK_TIERS = [
-  { name: 'Starter', price: 99, description: 'For pharmacies getting started', features: ['1 branch', 'Template website', 'Up to 20 services', 'Booking engine + payments', 'SMS & email reminders'], ctaText: 'Start Free Trial', isPopular: false },
-  { name: 'Professional', price: 199, description: 'Full platform with online ordering', features: ['Up to 3 branches', 'Full service library', 'Online ordering + delivery', 'Custom domain + mailbox', 'Marketing tools + reports'], ctaText: 'Start Free Trial', isPopular: true },
-  { name: 'Enterprise', price: 399, description: 'For pharmacy groups', features: ['Unlimited branches + SSO', 'Custom website design', 'Video consultations', 'Group benchmarking', 'Dedicated account manager'], ctaText: 'Book a Demo', isPopular: false },
-];
-
-const COMPARISONS = [
-  { feature: 'Clinical Services Management', us: true, pharmadoctor: true, deltera: 'Partial', pharmacyMentor: false },
-  { feature: 'Self-Service Website Builder', us: true, pharmadoctor: false, deltera: 'Partial', pharmacyMentor: false },
-  { feature: 'Online Ordering + Home Delivery', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
-  { feature: 'ID Verification', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
-  { feature: 'Prescription + Label Generation', us: true, pharmadoctor: false, deltera: 'Partial', pharmacyMentor: false },
-  { feature: 'Cold-Chain Courier Dispatch', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
-  { feature: 'Domain Reselling + DNS/SSL', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
-  { feature: 'Repeat Subscriptions', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
-  { feature: 'Multi-Branch + SSO', us: true, pharmadoctor: false, deltera: false, pharmacyMentor: false },
+const CATEGORIES = [
+  { id: 'BASIC_CONSULTATION', name: 'Consultations', icon: Stethoscope, color: 'bg-teal-50 text-teal-600 border-teal-200' },
+  { id: 'OTC', name: 'Over the Counter', icon: Pill, color: 'bg-blue-50 text-blue-600 border-blue-200' },
+  { id: 'PHARMACY_MEDICINE', name: 'Pharmacy Medicines', icon: Heart, color: 'bg-rose-50 text-rose-600 border-rose-200' },
+  { id: 'POM_PRESCRIBING', name: 'Prescription Services', icon: Shield, color: 'bg-amber-50 text-amber-600 border-amber-200' },
 ];
 
 const HOW_IT_WORKS = [
-  { step: 1, icon: UserPlus, title: 'Sign up in 2 minutes', desc: 'Create your account with just your pharmacy name and email. No credit card needed.' },
-  { step: 2, icon: Settings, title: 'Set up in 45 minutes', desc: 'Add your services, set up your team, and customise your website with our guided wizard.' },
-  { step: 3, icon: Rocket, title: 'Go live in 24 hours', desc: 'Your branded website is live with booking, payments, and clinical engine ready to go.' },
+  { step: '1', title: 'Enter your postcode', desc: 'Find pharmacies near you that offer the services you need.' },
+  { step: '2', title: 'Browse & choose', desc: 'Compare services, prices, ratings, and delivery options.' },
+  { step: '3', title: 'Order & pay', desc: 'Place your order securely. Track it from pharmacy to your door.' },
 ];
 
-const TRUSTED_PHARMACIES = [
-  'High Street Pharmacy', 'CareFirst Group', 'MediQuick', 'Wellbeing Pharmacy', 'PharmaCare UK', 'Unity Health'
-];
-
-function CellIcon({ value }: { value: boolean | string }) {
-  if (value === true) return <Check className="w-5 h-5 text-green-500 mx-auto" />;
-  if (value === false) return <span className="text-gray-300 text-lg mx-auto block text-center">&times;</span>;
-  return <span className="text-xs text-yellow-600 mx-auto block text-center">{value}</span>;
-}
-
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+export default function MarketplaceHomePage() {
+  const router = useRouter();
+  const [postcode, setPostcode] = useState('');
+  const [featured, setFeatured] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated.current) {
-          hasAnimated.current = true;
-          const duration = 1500;
-          const startTime = performance.now();
-
-          function animate(currentTime: number) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.floor(eased * target));
-            if (progress < 1) requestAnimationFrame(animate);
-          }
-
-          requestAnimationFrame(animate);
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{count}{suffix}</span>;
-}
-
-export default function LandingPage() {
-  const [tiers, setTiers] = useState<any[]>(FALLBACK_TIERS);
-  const [showFloatingCta, setShowFloatingCta] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
-
-  useEffect(() => {
-    packageApi.list()
-      .then(res => {
-        if (res.data.data?.length > 0) setTiers(res.data.data);
-      })
-      .catch(() => {}); // Fall back to hardcoded
+    marketplaceApi.featured().then(res => setFeatured(res.data.data || [])).catch(() => {});
+    marketplaceApi.categories().then(res => setCategories(res.data.data || [])).catch(() => {});
   }, []);
 
-  // Floating CTA: show after scrolling past hero
-  useEffect(() => {
-    function handleScroll() {
-      setShowFloatingCta(window.scrollY > 600);
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!postcode.trim()) return;
+    router.push(`/browse?postcode=${encodeURIComponent(postcode.trim())}`);
+  };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* Urgency Banner */}
-      <div className="bg-teal-700 text-white text-center py-2.5 px-4 text-sm font-medium">
-        Launch offer: <strong>First 50 pharmacies get 3 months free</strong> + free custom website setup.{' '}
-        <Link href="/signup" className="underline ml-1">Claim your spot &rarr;</Link>
-      </div>
-
-      {/* Nav */}
-      <nav className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="Pharmacy One Stop" className="w-9 h-9" />
-            <span className="text-lg font-bold">Pharmacy One Stop</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <a href="#features" className="hover:text-gray-900">Features</a>
-            <a href="#compare" className="hover:text-gray-900">Compare</a>
-            <a href="#pricing" className="hover:text-gray-900">Pricing</a>
-            <a href="#faq" className="hover:text-gray-900">FAQ</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">Login</Link>
-            <Link href="/signup" className="px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors">
-              Start Free Trial
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
+              <Pill className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Pharmacy One Stop</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/browse" className="text-sm text-gray-600 hover:text-gray-900 hidden sm:block">Browse</Link>
+            <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900">Log in</Link>
+            <Link href="/signup" className="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition">
+              List your pharmacy
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="pt-20 pb-16 px-4 bg-gradient-to-b from-white to-teal-50/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-            Now onboarding UK pharmacies
-          </div>
-          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.08] mb-6">
-            One platform to <span className="text-teal-600">launch, run, and scale</span> your pharmacy services
-          </h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Replace your website agency + WhatsApp + paper diaries + multiple tools with one subscription. Go live in 24 hours.
-          </p>
-          <div className="flex gap-3 justify-center mb-6">
-            <Link href="/signup" className="px-8 py-3.5 bg-teal-600 text-white text-base font-semibold rounded-xl hover:bg-teal-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
-              Start Free 14-Day Trial
-            </Link>
-            <a href="#features" className="px-8 py-3.5 border border-gray-300 text-gray-700 text-base font-semibold rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2">
-              See How It Works <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-          <p className="text-sm text-gray-400">No credit card required. Cancel anytime. Your data, always.</p>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-blue-50" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-24 sm:pb-28">
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">
+              Pharmacy services,{' '}
+              <span className="text-teal-600">delivered to you</span>
+            </h1>
+            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+              Find trusted pharmacies near you. Order consultations, medicines, and health services — all from one place.
+            </p>
 
-          {/* Social proof with animated counters */}
-          <div className="flex items-center justify-center gap-8 mt-10 pt-8 border-t border-gray-200 max-w-lg mx-auto">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {['AH', 'SP', 'RK', 'EM'].map((initials, i) => (
-                  <div key={i} className="w-9 h-9 rounded-full bg-teal-100 text-teal-700 border-2 border-white flex items-center justify-center text-xs font-bold">{initials}</div>
-                ))}
+            {/* Postcode Search */}
+            <form onSubmit={handleSearch} className="mt-10 max-w-xl mx-auto">
+              <div className="flex items-center bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-200 p-2 focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500 transition">
+                <MapPin className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  placeholder="Enter your postcode (e.g. SW1A 1AA)"
+                  className="flex-1 px-3 py-3 text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none text-lg"
+                />
+                <button
+                  type="submit"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-medium transition flex items-center gap-2 flex-shrink-0"
+                >
+                  <Search className="w-5 h-5" />
+                  <span className="hidden sm:inline">Search</span>
+                </button>
               </div>
-              <div className="text-left text-sm">
-                <div className="font-semibold text-gray-900"><AnimatedCounter target={120} suffix="+" /> pharmacies</div>
-                <div className="text-gray-500">across the UK</div>
-              </div>
+            </form>
+
+            {/* Trust indicators */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+              <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-teal-600" /> GPhC Registered</span>
+              <span className="flex items-center gap-1.5"><Truck className="w-4 h-4 text-teal-600" /> Next Day Delivery</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-teal-600" /> Clinician Reviewed</span>
             </div>
-            <div className="text-left text-sm border-l border-gray-200 pl-8">
-              <div className="font-semibold text-gray-900">&pound;<AnimatedCounter target={4200} />/mo</div>
-              <div className="text-gray-500">avg. extra revenue</div>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 px-4 bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">How it works</h2>
-            <p className="text-gray-500 text-lg">Three simple steps to transform your pharmacy.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="text-center relative">
-                <div className="w-16 h-16 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-7 h-7" />
-                </div>
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full text-6xl font-extrabold text-gray-100 select-none pointer-events-none">{item.step}</div>
-                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">{item.desc}</p>
-                {item.step < 3 && (
-                  <div className="hidden md:block absolute top-8 -right-4 text-gray-300">
-                    <ArrowRight className="w-6 h-6" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Categories */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center">Browse by category</h2>
+          <p className="mt-2 text-gray-500 text-center">Find the service you need from pharmacies near you</p>
 
-      {/* Pain Points */}
-      <section className="py-20 px-4 bg-gray-900 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Stop juggling 6 different tools</h2>
-          <p className="text-gray-400 text-lg mb-12 max-w-xl mx-auto">Most pharmacies run services using a patchwork that wastes hours every week.</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { name: 'Legacy clinical tools', desc: 'No website, no booking integration' },
-              { name: 'Wix / Squarespace', desc: 'Generic site, no clinical tools' },
-              { name: 'WhatsApp / Phone', desc: 'No audit trail or compliance' },
-              { name: 'Paper Diary', desc: 'Double bookings, no reminders' },
-              { name: 'Manual Dispatch', desc: 'No tracking or cold-chain' },
-              { name: '\u00A3500+/mo Combined', desc: '6 tools that don\'t talk' },
-            ].map(p => (
-              <div key={p.name} className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
-                <div className="text-sm font-semibold text-white/70 line-through mb-1">{p.name}</div>
-                <div className="text-xs text-gray-400">{p.desc}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 text-teal-400 font-semibold">Replace all of this with one platform &darr;</div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold mb-3">Everything your pharmacy needs. One subscription.</h2>
-            <p className="text-gray-500 text-lg">Four integrated layers that work together.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {FEATURES.map((f, i) => (
-              <div key={i} className="border border-gray-200 rounded-2xl p-7 hover:shadow-lg hover:-translate-y-1 transition-all relative overflow-hidden">
-                <div className="text-6xl font-extrabold text-gray-100 absolute top-4 right-6">0{i + 1}</div>
-                <div className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
-                  <f.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Comparison */}
-      <section id="compare" className="py-20 px-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">See how we compare</h2>
-            <p className="text-gray-500">No competitor combines all four layers.</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left px-5 py-4 font-medium text-gray-500 w-1/3">Capability</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Clinical Tools</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Booking Platforms</th>
-                  <th className="text-center px-3 py-4 font-medium text-gray-500">Website Agencies</th>
-                  <th className="text-center px-3 py-4 bg-teal-600 text-white font-bold rounded-t-lg">Pharmacy One Stop</th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARISONS.map((row) => (
-                  <tr key={row.feature} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-5 py-3 font-medium text-gray-700">{row.feature}</td>
-                    <td className="px-3 py-3"><CellIcon value={row.pharmadoctor} /></td>
-                    <td className="px-3 py-3"><CellIcon value={row.deltera} /></td>
-                    <td className="px-3 py-3"><CellIcon value={row.pharmacyMentor} /></td>
-                    <td className="px-3 py-3 bg-teal-50"><CellIcon value={row.us} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Trusted by pharmacies across the UK</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { text: 'We went from zero online presence to \u00A36,000/month in weight-loss orders within 8 weeks. The onboarding was done in an afternoon.', name: 'Dr. Amir Hussain', role: 'Owner, High Street Pharmacy' },
-              { text: 'We replaced our Wix site, booking tool, and clinical records system. One login, one bill, everything connected. My team saves 8 hours a week.', name: 'Sarah Patel', role: 'Superintendent, CareFirst' },
-              { text: 'The cold-chain dispatch and subscription management is a game-changer. We ship 200+ Wegovy pens a month now.', name: 'Raj Kaur', role: 'Clinical Lead, MediQuick' },
-            ].map((t, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-6">
-                <div className="flex gap-0.5 text-yellow-400 mb-3">{[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-current" />)}</div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-4 italic">&ldquo;{t.text}&rdquo;</p>
-                <div className="text-sm"><div className="font-semibold">{t.name}</div><div className="text-gray-500 text-xs">{t.role}</div></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Trusted By Logo Bar */}
-      <section className="py-12 px-4 bg-gray-50 border-y border-gray-100">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-center text-sm text-gray-400 font-medium uppercase tracking-wider mb-8">Trusted by leading UK pharmacies</p>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {TRUSTED_PHARMACIES.map((name) => (
-              <div key={name} className="bg-gray-200/50 rounded-lg h-12 flex items-center justify-center px-3">
-                <span className="text-xs font-semibold text-gray-400 text-center leading-tight">{name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-20 px-4 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-3">Simple, transparent pricing</h2>
-            <p className="text-gray-500">No hidden fees. No contracts. Cancel anytime.</p>
-          </div>
-
-          {/* Billing toggle */}
-          <div className="flex items-center justify-center gap-3 mb-10">
-            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-gray-900' : 'text-gray-400'}`}>Monthly</span>
-            <button
-              type="button"
-              onClick={() => setBillingPeriod(b => b === 'monthly' ? 'annual' : 'monthly')}
-              className={`relative w-12 h-6 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-teal-600' : 'bg-gray-300'}`}
-              aria-label="Toggle billing period"
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-6' : ''}`} />
-            </button>
-            <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-gray-900' : 'text-gray-400'}`}>Annual</span>
-            {billingPeriod === 'annual' && (
-              <span className="text-xs bg-teal-100 text-teal-700 font-semibold px-2 py-0.5 rounded-full">Save 20%</span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {tiers.map((t: any) => {
-              const features = Array.isArray(t.features) ? t.features : [];
-              const popular = t.isPopular || false;
-              const monthlyPrice = t.price;
-              const annualMonthlyPrice = Math.round(monthlyPrice * 0.8);
-              const displayPrice = billingPeriod === 'annual' ? annualMonthlyPrice : monthlyPrice;
+          <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {CATEGORIES.map((cat) => {
+              const apiCat = categories.find((c: any) => c.id === cat.id);
               return (
-                <div key={t.name} className={`bg-white rounded-2xl p-7 relative ${popular ? 'border-2 border-teal-500 shadow-lg' : 'border border-gray-200'}`}>
-                  {popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-xs font-bold px-4 py-1 rounded-full">MOST POPULAR</div>}
-                  <div className="text-lg font-bold mb-1">{t.name}</div>
-                  <div className="text-sm text-gray-500 mb-5">{t.description}</div>
-                  <div className="mb-6">
-                    <span className="text-4xl font-extrabold">&pound;{displayPrice}</span><span className="text-gray-400">/month</span>
-                    {billingPeriod === 'annual' && (
-                      <div className="text-xs text-teal-600 mt-1">
-                        <span className="line-through text-gray-400">&pound;{monthlyPrice}/mo</span> &mdash; billed &pound;{annualMonthlyPrice * 12}/year
-                      </div>
-                    )}
-                    {billingPeriod === 'monthly' && t.annualPrice && <div className="text-xs text-teal-600 mt-1">or &pound;{t.annualPrice}/year (save {Math.round((1 - t.annualPrice / (t.price * 12)) * 100)}%)</div>}
-                  </div>
-                  <div className="space-y-2.5 mb-7">
-                    {features.map((f: string) => (
-                      <div key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-teal-500 flex-shrink-0" /> {f}
-                      </div>
-                    ))}
-                  </div>
-                  <Link href={`/signup?tier=${t.tier || t.name?.toUpperCase()}`} className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors ${popular ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-                    {t.ctaText || 'Start Free Trial'}
-                  </Link>
-                </div>
+                <Link
+                  key={cat.id}
+                  href={`/browse?category=${cat.id}`}
+                  className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border ${cat.color} hover:shadow-md transition`}
+                >
+                  <cat.icon className="w-8 h-8" />
+                  <span className="font-medium text-sm text-center">{cat.name}</span>
+                  {apiCat && <span className="text-xs opacity-70">{apiCat.count} services</span>}
+                </Link>
               );
             })}
           </div>
-          <p className="text-center text-xs text-gray-400 mt-6">
-            All plans include: Stripe payments, clinical audit trail, GDPR compliance, WCAG 2.1 AA.
-            {tiers[0]?.consultationFee && ` Additional: \u00A3${tiers[0].consultationFee}/consultation, \u00A3${tiers[0].dispatchFee}/dispatch, \u00A3${tiers[0].smsFee}/SMS.`}
-          </p>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="py-20 px-4">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Common questions</h2>
-          {[
-            ['How quickly can I go live?', 'Template plans go live in 24 hours. Custom builds take 2-4 weeks. The onboarding wizard takes under 45 minutes.'],
-            ['Can I transfer my existing domain?', 'Yes. Transfer your domain with zero downtime. We handle DNS, SSL, and email setup.'],
-            ['Do I need DSP registration for online sales?', 'Yes, for POM products. We verify your GPhC DSP registration before enabling online fulfilment.'],
-            ['What happens to my data if I cancel?', 'Your domain and data are always yours. One-click export for patients, bookings, orders, clinical records. No lock-in.'],
-            ['Is it GPhC / MHRA compliant?', 'Yes. Built for compliance from the ground up. MHRA Internet Pharmacy logo auto-injects for online POM services. Immutable audit trail. Ready for inspections.'],
-            ['Can I switch from my current tools?', 'Yes. Most pharmacies migrate fully within 2 weeks. We provide a guided onboarding process and support throughout.'],
-          ].map(([q, a]) => (
-            <details key={q} className="border-b border-gray-200 py-5 group">
-              <summary className="flex items-center justify-between cursor-pointer text-base font-semibold text-gray-900 list-none">
-                {q}
-                <span className="text-gray-400 group-open:rotate-45 transition-transform text-xl">+</span>
-              </summary>
-              <p className="text-sm text-gray-600 mt-3 leading-relaxed max-w-xl">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+      {/* Featured Pharmacies */}
+      {featured.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Featured pharmacies</h2>
+                <p className="mt-1 text-gray-500">Trusted pharmacies delivering quality healthcare</p>
+              </div>
+              <Link href="/browse" className="text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1">
+                View all <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-      {/* Final CTA */}
-      <section className="py-20 px-4 bg-gradient-to-br from-teal-700 to-teal-900 text-white text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-4xl font-extrabold mb-4">Ready to grow your pharmacy?</h2>
-          <p className="text-teal-200 text-lg mb-8">Join 120+ UK pharmacies already using Pharmacy One Stop. Go live this week.</p>
-          <div className="flex gap-3 justify-center">
-            <Link href="/signup" className="px-8 py-3.5 bg-white text-teal-800 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-base">
-              Start Free 14-Day Trial
-            </Link>
-            <Link href="/signup" className="px-8 py-3.5 border border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors text-base">
-              Book a Personal Demo
-            </Link>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featured.slice(0, 6).map((item: any) => (
+                <Link
+                  key={item.adId}
+                  href={`/pharmacy/${item.pharmacy.slug}`}
+                  className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition group"
+                >
+                  <div className="flex items-start gap-4">
+                    {item.pharmacy.logoUrl ? (
+                      <img src={item.pharmacy.logoUrl} alt={item.pharmacy.name} className="w-14 h-14 rounded-xl object-cover" />
+                    ) : (
+                      <div
+                        className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-bold"
+                        style={{ backgroundColor: item.pharmacy.primaryColor || '#0d9488' }}
+                      >
+                        {item.pharmacy.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 truncate group-hover:text-teal-600 transition">{item.pharmacy.name}</h3>
+                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">Sponsored</span>
+                      </div>
+                      {item.pharmacy.rating && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                          <span className="text-sm font-medium text-gray-700">{item.pharmacy.rating}</span>
+                          <span className="text-sm text-gray-400">({item.pharmacy.reviewCount})</span>
+                        </div>
+                      )}
+                      {item.description && <p className="text-sm text-gray-500 mt-2 line-clamp-2">{item.description}</p>}
+                    </div>
+                  </div>
+                  {(item.pharmacy.deliveryFee !== null || item.pharmacy.minOrderAmount !== null) && (
+                    <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
+                      {item.pharmacy.deliveryFee !== null && (
+                        <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> {item.pharmacy.deliveryFee === 0 ? 'Free delivery' : `£${item.pharmacy.deliveryFee} delivery`}</span>
+                      )}
+                      {item.pharmacy.minOrderAmount !== null && (
+                        <span>Min. £{item.pharmacy.minOrderAmount}</span>
+                      )}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="mt-5 text-sm text-teal-300 flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4" /> No credit card required. No contracts. Cancel anytime.
+        </section>
+      )}
+
+      {/* How it Works */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center">How it works</h2>
+          <p className="mt-2 text-gray-500 text-center">Order pharmacy services in 3 simple steps</p>
+
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {HOW_IT_WORKS.map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-12 h-12 bg-teal-100 text-teal-700 rounded-2xl flex items-center justify-center text-xl font-bold mx-auto">
+                  {item.step}
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-gray-900">{item.title}</h3>
+                <p className="mt-2 text-gray-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA for Pharmacies */}
+      <section className="py-16 bg-gradient-to-r from-teal-600 to-teal-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white">Own a pharmacy?</h2>
+          <p className="mt-4 text-teal-100 text-lg max-w-2xl mx-auto">
+            List your pharmacy on Pharmacy One Stop and reach thousands of patients in your area.
+            Early bird pricing: just £50/month + 10% commission.
+          </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/signup"
+              className="bg-white text-teal-700 px-8 py-3 rounded-xl font-semibold hover:bg-teal-50 transition flex items-center gap-2"
+            >
+              List your pharmacy <ArrowRight className="w-5 h-5" />
+            </Link>
+            <div className="text-teal-200 text-sm">
+              First 100 pharmacies get Early Bird pricing — £50/mo
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.svg" alt="" className="w-7 h-7" />
-              <span className="text-white font-bold text-sm">Pharmacy One Stop</span>
+      <footer className="bg-gray-900 text-gray-400 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <div>
+              <h4 className="text-white font-semibold mb-4">For Patients</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/browse" className="hover:text-white transition">Browse Pharmacies</Link></li>
+                <li><Link href="/browse?category=BASIC_CONSULTATION" className="hover:text-white transition">Consultations</Link></li>
+                <li><Link href="/browse?category=OTC" className="hover:text-white transition">OTC Medicines</Link></li>
+              </ul>
             </div>
-            <p className="text-xs leading-relaxed">UK B2B healthcare enablement platform for community pharmacies.</p>
+            <div>
+              <h4 className="text-white font-semibold mb-4">For Pharmacies</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/signup" className="hover:text-white transition">List Your Pharmacy</Link></li>
+                <li><Link href="/login" className="hover:text-white transition">Pharmacy Login</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="#" className="hover:text-white transition">About</Link></li>
+                <li><Link href="#" className="hover:text-white transition">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="#" className="hover:text-white transition">Privacy Policy</Link></li>
+                <li><Link href="#" className="hover:text-white transition">Terms of Service</Link></li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <div className="text-white font-semibold text-sm mb-3">Product</div>
-            <div className="space-y-2 text-xs"><a href="#features" className="block hover:text-white">Features</a><a href="#pricing" className="block hover:text-white">Pricing</a><a href="#compare" className="block hover:text-white">Compare</a><Link href="/signup" className="block hover:text-white">Free Trial</Link></div>
+          <div className="mt-12 pt-8 border-t border-gray-800 text-sm text-center">
+            &copy; {new Date().getFullYear()} Pharmacy One Stop. All rights reserved.
           </div>
-          <div>
-            <div className="text-white font-semibold text-sm mb-3">Resources</div>
-            <div className="space-y-2 text-xs"><a href="#faq" className="block hover:text-white">FAQ</a><a href="#" className="block hover:text-white">Documentation</a><a href="#" className="block hover:text-white">API Reference</a><a href="#" className="block hover:text-white">Status</a></div>
-          </div>
-          <div>
-            <div className="text-white font-semibold text-sm mb-3">Legal</div>
-            <div className="space-y-2 text-xs"><Link href="/privacy" className="block hover:text-white">Privacy Policy</Link><Link href="/terms" className="block hover:text-white">Terms of Service</Link><Link href="/cookies" className="block hover:text-white">Cookie Policy</Link><Link href="/complaints" className="block hover:text-white">Complaints</Link><Link href="/gdpr" className="block hover:text-white">GDPR</Link></div>
-          </div>
-        </div>
-        <div className="max-w-5xl mx-auto pt-6 border-t border-gray-800 flex items-center justify-between text-xs">
-          <span>&copy; 2026 Pharmacy One Stop. All rights reserved.</span>
-          <span>Built by TSP</span>
         </div>
       </footer>
-
-      {/* Floating CTA (mobile only) */}
-      {showFloatingCta && (
-        <div className="fixed bottom-4 right-4 z-50 md:hidden">
-          <Link
-            href="/signup"
-            className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white text-sm font-semibold rounded-full shadow-lg hover:bg-teal-700 transition-all"
-          >
-            Start Free Trial <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { createOnlineOrderSchema, reviewOrderSchema } from '../validators/servic
 import { generateReference, paginate, buildPaginationMeta } from '../utils/helpers';
 import { NotFoundError, ForbiddenError, ValidationError } from '../utils/errors';
 import { qs, qn } from '../utils/query';
+import { WalletService } from '../services/wallet.service';
 
 const router = Router();
 
@@ -263,6 +264,14 @@ router.post('/:id/dispatch', authenticate, requireRole('DISPATCH_CLERK', 'DISPEN
       where: { id: orderId },
       data: { status: 'DISPATCHED' },
     });
+
+    // Process commission on dispatch (sale is confirmed)
+    try {
+      await WalletService.processOrderCommission(orderId);
+    } catch (commErr) {
+      // Log but don't fail the dispatch
+      console.error('[Commission] Failed to process commission:', commErr);
+    }
 
     res.json({ success: true, data: shipment });
   } catch (err) { next(err); }

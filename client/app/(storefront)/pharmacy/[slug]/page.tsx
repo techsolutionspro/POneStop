@@ -35,7 +35,6 @@ const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
   { value: 'OTC', label: 'Over the Counter' },
   { value: 'PHARMACY_MEDICINE', label: 'Pharmacy Medicine' },
-  { value: 'POM_PGD', label: 'Clinical Service' },
   { value: 'POM_PRESCRIBING', label: 'Prescription' },
   { value: 'BASIC_CONSULTATION', label: 'Consultation' },
 ];
@@ -101,7 +100,7 @@ export default function PharmacyStorefrontPage() {
 
   const filteredServices = services.filter((service: any) => {
     const matchesSearch = !searchQuery || service.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !categoryFilter || (service.category || 'POM_PGD') === categoryFilter;
+    const matchesCategory = !categoryFilter || (service.category || 'BASIC_CONSULTATION') === categoryFilter;
     const matchesFulfilment = !fulfilmentFilter || service.fulfilmentModes.includes(fulfilmentFilter);
     return matchesSearch && matchesCategory && matchesFulfilment;
   });
@@ -277,15 +276,14 @@ export default function PharmacyStorefrontPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredServices.map((service: any) => {
-              const cat = service.category || 'POM_PGD';
+              const cat = service.category || 'BASIC_CONSULTATION';
               const catLabels: Record<string, { label: string; color: string }> = {
                 BASIC_CONSULTATION: { label: 'Consultation', color: 'bg-blue-50 text-blue-700' },
                 OTC: { label: 'Over the Counter', color: 'bg-green-50 text-green-700' },
                 PHARMACY_MEDICINE: { label: 'Pharmacy Medicine', color: 'bg-amber-50 text-amber-700' },
-                POM_PGD: { label: 'Clinical Service', color: 'bg-teal-50 text-teal-700' },
                 POM_PRESCRIBING: { label: 'Prescription', color: 'bg-purple-50 text-purple-700' },
               };
-              const catInfo = catLabels[cat] || catLabels.POM_PGD;
+              const catInfo = catLabels[cat] || catLabels.BASIC_CONSULTATION;
               const hasOnline = service.fulfilmentModes.includes('ONLINE_DELIVERY');
               const hasInBranch = service.fulfilmentModes.includes('IN_BRANCH');
               const hasClickCollect = service.fulfilmentModes.includes('CLICK_AND_COLLECT');
@@ -478,7 +476,7 @@ export default function PharmacyStorefrontPage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-            <p>&copy; {new Date().getFullYear()} {pharmacy.name}. Powered by Pharmacy One Stop.</p>
+            <p>&copy; {new Date().getFullYear()} {pharmacy.name}. All rights reserved.</p>
           </div>
         </div>
       </footer>

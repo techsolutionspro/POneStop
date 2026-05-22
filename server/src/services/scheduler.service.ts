@@ -12,6 +12,7 @@ export class SchedulerService {
       this.checkExpiredIdv(),
       this.sendAftercarMessages(),
       this.flagOverdueSla(),
+      this.processWeeklyPayouts(),
     ]);
     console.log('[Scheduler] Scheduled tasks complete');
   }
@@ -113,18 +114,70 @@ export class SchedulerService {
       },
       include: {
         patient: { include: { user: { select: { phone: true } } } },
-        pgd: { select: { therapyArea: true } },
+        // Note: pgd reference removed, use productSupplied field instead
       },
     });
 
     for (const c of consultations) {
       if (c.patient?.user?.phone) {
         await SmsService.sendAftercare(c.patient.user.phone, 'Your Pharmacy',
-          `It's been 24 hours since your ${c.pgd.therapyArea} treatment. How are you feeling?`
+          `It's been 24 hours since your treatment. How are you feeling?`
         );
       }
     }
     console.log(`[Scheduler] Sent ${consultations.length} aftercare messages`);
+  }
+
+  // Process automatic weekly payouts (Just Eat model — every Monday)
+  static async processWeeklyPayouts() {
+    const today = new Date();
+    if (today.getDay() !== 1) return; // Only run on Mondays
+
+    const weekAgo = new Date(today.getTime() - 7 * 86400000);
+
+    // Get all tenants with unpaid commissions from last week
+    const tenants = await prisma.tenant.findMany({
+      where: { status: 'ACTIVE' },
+      include: {
+        wallet: true,
+      },
+    });
+
+    for (const tenant of tenants) {
+      if (!tenant.wallet || tenant.wallet.availableBalance <= 0) continue;
+
+      const balance = tenant.wallet.availableBalance;
+      if (balance < 1) continue; // Minimum £1 payout
+
+      try {
+        // Create automatic payout
+        await prisma.payout.create({
+          data: {
+            tenantId: tenant.id,
+            amount: balance,
+            status: 'APPROVED', // Auto-approved for weekly payouts
+            paymentMethod: 'BANK_TRANSFER',
+            reference: `AUTO-WEEKLY-${today.toISOString().slice(0, 10)}`,
+            notes: `Automatic weekly payout for w/e ${today.toLocaleDateString('en-GB')}`,
+            approvedAt: new Date(),
+          },
+        });
+
+        // Update wallet
+        await prisma.pharmacyWallet.update({
+          where: { id: tenant.wallet.id },
+          data: {
+            availableBalance: 0,
+            pendingPayouts: { increment: balance },
+            totalPayouts: { increment: balance },
+          },
+        });
+
+        console.log(`[Scheduler] Auto payout £${balance.toFixed(2)} for tenant ${tenant.name}`);
+      } catch (err) {
+        console.error(`[Scheduler] Failed auto payout for ${tenant.name}:`, err);
+      }
+    }
   }
 
   // Flag orders that have breached SLA

@@ -100,6 +100,67 @@ export class CourierService {
     return `/manifests/manifest-${Date.now()}.pdf`;
   }
 
+  // Select optimal courier based on order requirements
+  static selectCourier(isColdChain: boolean, isSignedFor: boolean, weight: number): 'ROYAL_MAIL' | 'DPD' | 'EVRI' | 'COLD_CHAIN' {
+    if (isColdChain) return 'COLD_CHAIN';
+    if (weight > 2000) return 'DPD'; // Over 2kg
+    if (isSignedFor) return 'ROYAL_MAIL'; // Royal Mail Special Delivery
+    return 'EVRI'; // Budget option
+  }
+
+  // Get temperature log for cold-chain shipments
+  static async getTemperatureLog(trackingNumber: string): Promise<{
+    readings: { timestamp: string; tempC: number; humidity: number; location: string }[];
+    inRange: boolean;
+  }> {
+    // Stub: would integrate with cold-chain partner API
+    console.log(`[Courier] Getting temp log for ${trackingNumber}`);
+    return {
+      readings: [
+        { timestamp: new Date().toISOString(), tempC: 4.2, humidity: 45, location: 'Dispatch' },
+        { timestamp: new Date(Date.now() + 3600000).toISOString(), tempC: 3.8, humidity: 42, location: 'In Transit' },
+      ],
+      inRange: true, // 2-8°C range
+    };
+  }
+
+  // Check delivery slot availability
+  static async getDeliverySlots(postcode: string, isColdChain: boolean): Promise<{
+    date: string;
+    slots: { time: string; courier: string; price: number }[];
+  }[]> {
+    const slots = [];
+    const now = new Date();
+
+    for (let i = 1; i <= 5; i++) {
+      const date = new Date(now);
+      date.setDate(date.getDate() + i);
+      if (date.getDay() === 0 || date.getDay() === 6) continue; // Skip weekends
+
+      const daySlots: { time: string; courier: string; price: number }[] = [
+        { time: '9:00-13:00', courier: 'ROYAL_MAIL', price: 0 },
+        { time: '13:00-17:00', courier: 'DPD', price: 0 },
+      ];
+
+      if (!isColdChain) {
+        daySlots.push({ time: '9:00-21:00', courier: 'EVRI', price: 0 });
+      } else {
+        daySlots.push({ time: '9:00-12:00', courier: 'COLD_CHAIN', price: 4.99 });
+      }
+
+      slots.push({ date: date.toISOString().split('T')[0], slots: daySlots });
+    }
+
+    return slots;
+  }
+
+  // Validate dispatch address
+  static validateDispatchAddress(postcode: string): boolean {
+    // UK postcode regex
+    const ukPostcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+    return ukPostcodeRegex.test(postcode.trim());
+  }
+
   private static getEstimatedDelivery(daysFromNow: number): string {
     const date = new Date();
     date.setDate(date.getDate() + daysFromNow);

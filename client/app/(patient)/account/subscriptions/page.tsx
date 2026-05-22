@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { formatCurrency, formatDate, getStatusColor } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import api from '@/lib/api';
+import { subscriptionApi } from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface Subscription {
   id: string;
@@ -35,7 +36,7 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.get('/subscriptions/me');
+        const res = await subscriptionApi.me();
         const data = res.data.data;
         setSubscriptions(data?.subscriptions || data || []);
         setHistory(data?.history || []);
@@ -52,7 +53,7 @@ export default function SubscriptionsPage() {
     if (action === 'cancel' && !confirm('Are you sure you want to cancel this subscription? This cannot be undone.')) return;
     setActionLoading(subId);
     try {
-      await api.post(`/subscriptions/${subId}/${action}`);
+      await subscriptionApi[action](subId);
       setSubscriptions((prev) =>
         prev.map((s) => {
           if (s.id !== subId) return s;
@@ -62,8 +63,10 @@ export default function SubscriptionsPage() {
           return s;
         })
       );
+      const labels = { pause: 'paused', resume: 'resumed', skip: 'skipped next delivery', cancel: 'cancelled' };
+      toast.success(`Subscription ${labels[action]}`);
     } catch {
-      alert('Failed to update subscription. Please try again.');
+      toast.error('Failed to update subscription. Please try again.');
     } finally {
       setActionLoading(null);
     }

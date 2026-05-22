@@ -10,6 +10,7 @@ import {
   LayoutDashboard, Stethoscope, Calendar, ShoppingBag, ClipboardList,
   Package, Truck, Users, BarChart3, Megaphone, CreditCard, Globe,
   UserCog, Building2, Settings, LogOut, Bell, Search, ChevronDown, Menu, X,
+  Wallet, Banknote, TrendingUp,
 } from 'lucide-react';
 import { CommandPalette } from '@/components/ui/command-palette';
 
@@ -39,8 +40,10 @@ const navSections = [
   {
     label: 'Business',
     items: [
+      { href: '/admin/earnings', icon: TrendingUp, label: 'Earnings' },
+      { href: '/admin/payouts', icon: Banknote, label: 'Payouts' },
+      { href: '/admin/ads', icon: Megaphone, label: 'Advertising' },
       { href: '/admin/reports', icon: BarChart3, label: 'Reports' },
-      { href: '/admin/marketing', icon: Megaphone, label: 'Marketing' },
       { href: '/admin/billing', icon: CreditCard, label: 'Billing' },
     ],
   },

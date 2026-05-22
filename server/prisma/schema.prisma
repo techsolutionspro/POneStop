@@ -35,6 +35,8 @@ enum SubscriptionTier {
   STARTER
   PROFESSIONAL
   ENTERPRISE
+  EARLY_BIRD
+  STANDARD
 }
 
 enum ServiceFulfilmentMode {
@@ -148,6 +150,32 @@ enum DspStatus {
   REJECTED
 }
 
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PayoutMethod {
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  OTHER
+}
+
+enum CommissionStatus {
+  PENDING
+  COLLECTED
+}
+
+enum AdStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
 // ============================================================
 // PLATFORM (Super-Admin Level)
 // ============================================================
@@ -188,6 +216,7 @@ model User {
   consultations   Consultation[]   @relation("ConsultationClinician")
   orderReviews    OnlineOrder[]    @relation("OrderReviewer")
   prescriptions   Prescription[]   @relation("PrescriptionPrescriber")
+  payoutsApproved Payout[]         @relation("PayoutApprovedBy")
 
   @@index([tenantId])
   @@index([email])
@@ -254,6 +283,17 @@ model Tenant {
   onboardingStep    Int              @default(0)
   goLiveAt          DateTime?
 
+  // Marketplace fields
+  commissionRate    Float            @default(10)   // percentage
+  rating            Float?
+  reviewCount       Int              @default(0)
+  deliveryRadius    Float?           // miles
+  deliveryFee       Float?
+  minOrderAmount    Float?
+  latitude          Float?
+  longitude         Float?
+  isMarketplaceListed Boolean        @default(true)
+
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -268,9 +308,16 @@ model Tenant {
   invoices          Invoice[]
   domains           Domain[]
   auditLogs         AuditLog[]
+  payouts           Payout[]
+  commissions       Commission[]
+  wallet            PharmacyWallet?
+  ads               Ad[]
+  websiteConfig     WebsiteConfig?
+  videoSessions     VideoSession[]
 
   @@index([slug])
   @@index([status])
+  @@index([isMarketplaceListed])
 }
 
 model Branch {
@@ -526,6 +573,10 @@ model Booking {
   notes           String?
   cancellationReason String?
 
+  // Commission
+  commissionAmount Float?
+  commissionRate   Float?
+
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -589,6 +640,13 @@ model OnlineOrder {
   stripePaymentId String?
   stripeRefundId  String?
 
+  // Commission & Payout
+  commissionAmount Float?
+  commissionRate   Float?
+  platformFee      Float?
+  payoutId         String?
+  payout           Payout?      @relation(fields: [payoutId], references: [id])
+
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -598,11 +656,13 @@ model OnlineOrder {
   shipment        Shipment?
   subscription    PatientSubscription? @relation(fields: [subscriptionId], references: [id])
   subscriptionId  String?
+  commission      Commission?
 
   @@index([tenantId])
   @@index([status])
   @@index([patientId])
   @@index([reviewerId])
+  @@index([payoutId])
 }
 
 // ============================================================
@@ -850,4 +910,149 @@ model Package {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ============================================================
+// MARKETPLACE: Payouts, Commission, Wallets, Ads
+// ============================================================
+
+model Payout {
+  id              String       @id @default(cuid())
+  tenantId        String
+  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  amount          Float
+  status          PayoutStatus @default(PENDING)
+  paymentMethod   PayoutMethod?
+  bankName        String?
+  accountNumber   String?
+  sortCode        String?
+  reference       String?
+  requestedAt     DateTime     @default(now())
+  approvedAt      DateTime?
+  paidAt          DateTime?
+  approvedById    String?
+  approvedBy      User?        @relation("PayoutApprovedBy", fields: [approvedById], references: [id])
+  notes           String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Orders included in this payout
+  orders          OnlineOrder[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model Commission {
+  id               String           @id @default(cuid())
+  tenantId         String
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  orderId          String           @unique
+  order            OnlineOrder      @relation(fields: [orderId], references: [id])
+  orderAmount      Float
+  commissionRate   Float
+  commissionAmount Float
+  status           CommissionStatus @default(PENDING)
+  collectedAt      DateTime?
+  createdAt        DateTime         @default(now())
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model PharmacyWallet {
+  id               String   @id @default(cuid())
+  tenantId         String   @unique
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  totalEarnings    Float    @default(0)
+  totalCommission  Float    @default(0)
+  totalPayouts     Float    @default(0)
+  availableBalance Float    @default(0)
+  pendingPayouts   Float    @default(0)
+  updatedAt        DateTime @updatedAt
+}
+
+model Ad {
+  id               String   @id @default(cuid())
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  title            String
+  description      String?
+  imageUrl         String?
+  budget           Float
+  spent            Float    @default(0)
+  cpc              Float    @default(0.50) // cost per click
+  status           AdStatus @default(DRAFT)
+  targetPostcode   String?
+  targetRadius     Float?   // miles
+  targetCategories Json?    // array of ServiceCategory strings
+  impressions      Int      @default(0)
+  clicks           Int      @default(0)
+  conversions      Int      @default(0)
+  startDate        DateTime?
+  endDate          DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([targetPostcode])
+}
+
+// ============================================================
+// WEBSITE BUILDER
+// ============================================================
+
+model WebsiteConfig {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  blocks          Json     // Array of BlockData objects
+  settings        Json?    // Global site settings (fonts, nav items, footer text)
+  isPublished     Boolean  @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================================
+// VIDEO CONSULTATIONS
+// ============================================================
+
+enum VideoSessionStatus {
+  SCHEDULED
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model VideoSession {
+  id              String             @id @default(cuid())
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  bookingId       String?            @unique
+  onlineOrderId   String?
+  clinicianId     String
+  patientId       String
+  status          VideoSessionStatus @default(SCHEDULED)
+  scheduledAt     DateTime
+  startedAt       DateTime?
+  endedAt         DateTime?
+  duration        Int?               // minutes
+  roomName        String             @unique
+  roomSid         String?            // Twilio room SID
+  clinicianToken  String?
+  patientToken    String?
+  recordingUrl    String?
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@index([clinicianId])
+  @@index([patientId])
+  @@index([status])
 }

@@ -142,49 +142,20 @@ export class StripeService {
   }
 
   // ============================================================
-  // TENANT PAYMENTS — Patient payments via Stripe Connect
+  // MARKETPLACE PAYMENTS — All payments go to platform account
+  // Commission is tracked internally, payouts are manual
   // ============================================================
 
-  static async createConnectedAccount(tenantName: string, email: string): Promise<string> {
-    const stripe = this.getClient();
-    if (!stripe) return `acct_stub_${Date.now()}`;
-
-    const account = await stripe.accounts.create({
-      type: 'standard',
-      country: 'GB',
-      email,
-      business_type: 'company',
-      company: { name: tenantName },
-      capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
-    });
-    return account.id;
-  }
-
-  static async createAccountLink(accountId: string, returnUrl: string): Promise<string> {
-    const stripe = this.getClient();
-    if (!stripe) return `${returnUrl}?stripe=stub`;
-
-    const link = await stripe.accountLinks.create({
-      account: accountId,
-      refresh_url: returnUrl,
-      return_url: returnUrl,
-      type: 'account_onboarding',
-    });
-    return link.url;
-  }
-
-  static async createPaymentIntent(amount: number, currency: string, connectedAccountId: string, metadata: Record<string, string>): Promise<{ id: string; clientSecret: string }> {
+  // Create a payment intent for a marketplace order (all funds to platform)
+  static async createMarketplacePayment(amount: number, currency: string, metadata: Record<string, string>): Promise<{ id: string; clientSecret: string }> {
     const stripe = this.getClient();
     if (!stripe) return { id: `pi_stub_${Date.now()}`, clientSecret: 'stub_secret' };
 
-    const platformFee = Math.round(amount * 0.005);
     const intent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency,
       capture_method: 'manual',
       metadata,
-      application_fee_amount: platformFee,
-      transfer_data: { destination: connectedAccountId },
     });
     return { id: intent.id, clientSecret: intent.client_secret };
   }
@@ -206,12 +177,139 @@ export class StripeService {
     return refund.id;
   }
 
-  static async createCustomer(email: string, name: string, connectedAccountId?: string): Promise<string> {
+  static async createCustomer(email: string, name: string): Promise<string> {
     const stripe = this.getClient();
     if (!stripe) return `cus_stub_${Date.now()}`;
 
-    const opts = connectedAccountId ? { stripeAccount: connectedAccountId } : {};
-    const customer = await stripe.customers.create({ email, name }, opts);
+    const customer = await stripe.customers.create({ email, name });
     return customer.id;
+  }
+
+  // ============================================================
+  // STRIPE CONNECT — Onboard pharmacies as connected accounts
+  // ============================================================
+
+  // Create a Connect Express account for a pharmacy
+  static async createConnectAccount(tenantId: string, email: string, businessName: string): Promise<{ accountId: string; onboardingUrl: string }> {
+    const stripe = this.getClient();
+    if (!stripe) {
+      return { accountId: `acct_stub_${Date.now()}`, onboardingUrl: `${env.FRONTEND_URL}/admin?connect=stub` };
+    }
+
+    const account = await stripe.accounts.create({
+      type: 'express',
+      country: 'GB',
+      email,
+      business_type: 'company',
+      company: { name: businessName },
+      capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
+      metadata: { tenantId, platform: 'pharmacy-one-stop' },
+    });
+
+    const accountLink = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: `${env.FRONTEND_URL}/admin/settings?stripe=refresh`,
+      return_url: `${env.FRONTEND_URL}/admin/settings?stripe=complete`,
+      type: 'account_onboarding',
+    });
+
+    logger.info(`[Stripe Connect] Account created for tenant ${tenantId}: ${account.id}`);
+    return { accountId: account.id, onboardingUrl: accountLink.url };
+  }
+
+  // Get Connect account status
+  static async getConnectAccountStatus(accountId: string): Promise<{
+    chargesEnabled: boolean;
+    payoutsEnabled: boolean;
+    detailsSubmitted: boolean;
+    requirements: string[];
+  }> {
+    const stripe = this.getClient();
+    if (!stripe) {
+      return { chargesEnabled: true, payoutsEnabled: true, detailsSubmitted: true, requirements: [] };
+    }
+
+    const account = await stripe.accounts.retrieve(accountId);
+    return {
+      chargesEnabled: account.charges_enabled,
+      payoutsEnabled: account.payouts_enabled,
+      detailsSubmitted: account.details_submitted,
+      requirements: account.requirements?.currently_due || [],
+    };
+  }
+
+  // Create Connect login link for pharmacy to manage their Stripe
+  static async createConnectLoginLink(accountId: string): Promise<string> {
+    const stripe = this.getClient();
+    if (!stripe) return `${env.FRONTEND_URL}/admin?stripe-dashboard=stub`;
+
+    const link = await stripe.accounts.createLoginLink(accountId);
+    return link.url;
+  }
+
+  // Create payment with Connect — split between platform and pharmacy
+  static async createConnectPayment(
+    amount: number,
+    connectedAccountId: string,
+    platformFeePercent: number,
+    metadata: Record<string, string>
+  ): Promise<{ id: string; clientSecret: string }> {
+    const stripe = this.getClient();
+    if (!stripe) return { id: `pi_stub_${Date.now()}`, clientSecret: 'stub_secret' };
+
+    const platformFee = Math.round(amount * platformFeePercent / 100);
+
+    const intent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100),
+      currency: 'gbp',
+      application_fee_amount: platformFee,
+      transfer_data: { destination: connectedAccountId },
+      metadata,
+    });
+
+    return { id: intent.id, clientSecret: intent.client_secret };
+  }
+
+  // Transfer funds to connected account (for manual payouts)
+  static async transferToConnectedAccount(
+    amount: number,
+    connectedAccountId: string,
+    metadata: Record<string, string>
+  ): Promise<string> {
+    const stripe = this.getClient();
+    if (!stripe) return `tr_stub_${Date.now()}`;
+
+    const transfer = await stripe.transfers.create({
+      amount: Math.round(amount * 100),
+      currency: 'gbp',
+      destination: connectedAccountId,
+      metadata,
+    });
+
+    return transfer.id;
+  }
+
+  // Create a Stripe Identity verification session
+  static async createIdentitySession(metadata: Record<string, string>): Promise<{
+    sessionId: string;
+    clientSecret: string;
+  }> {
+    const stripe = this.getClient();
+    if (!stripe) {
+      return { sessionId: `vs_stub_${Date.now()}`, clientSecret: `vs_secret_stub_${Date.now()}` };
+    }
+
+    const session = await stripe.identity.verificationSessions.create({
+      type: 'document',
+      metadata,
+      options: {
+        document: {
+          allowed_types: ['driving_license', 'passport', 'id_card'],
+          require_matching_selfie: true,
+        },
+      },
+    });
+
+    return { sessionId: session.id, clientSecret: session.client_secret };
   }
 }

@@ -67,7 +67,6 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="flex gap-2">
           <Link href="/super-admin/tenants"><Button variant="outline" size="sm"><Building2 className="w-3.5 h-3.5" /> Tenants</Button></Link>
-          <Link href="/super-admin/pgds"><Button variant="outline" size="sm"><FileText className="w-3.5 h-3.5" /> PGDs</Button></Link>
           <Link href="/super-admin/tenants"><Button size="sm"><Users className="w-3.5 h-3.5" /> Onboard Tenant</Button></Link>
         </div>
       </div>
@@ -78,7 +77,7 @@ export default function SuperAdminDashboard() {
         <StatCard label="Active Storefronts" value={s.activeTenants || 0} change={s.totalTenants ? `${Math.round(((s.activeTenants || 0)/(s.totalTenants || 1))*100)}% activation` : '—'} trend="up" />
         <StatCard label="Monthly Revenue" value={formatCurrency(s.monthRevenue || 0)} change="+18% MoM" trend="up" />
         <StatCard label="Today's Orders" value={s.todayOrders || 0} change="+22% vs avg" trend="up" />
-        <StatCard label="Prescriber SLA" value={`${s.avgPrescriberSla || 0}h`} change="Target: 4h" trend="up" />
+        <StatCard label="Commission Earned" value={formatCurrency(s.totalCommission || 0)} change="Platform fees" trend="up" />
       </div>
 
       {/* Quick Actions Grid */}

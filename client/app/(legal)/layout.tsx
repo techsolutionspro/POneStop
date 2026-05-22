@@ -20,7 +20,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <main className="max-w-4xl mx-auto px-4 py-12">{children}</main>
       <footer className="border-t border-gray-200 bg-white py-6">
         <div className="max-w-4xl mx-auto px-4 text-center text-xs text-gray-400">
-          &copy; 2026 Pharmacy One Stop. All rights reserved. Built by TSP.
+          &copy; 2026 Pharmacy One Stop. All rights reserved.
         </div>
       </footer>
     </div>

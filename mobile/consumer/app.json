@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Pharmacy One Stop",
+    "slug": "pharmacy-one-stop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "pharmacyonestop",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0d9488",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pharmacyonestop.consumer",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to find pharmacies near you."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0d9488"
+      },
+      "package": "com.pharmacyonestop.consumer",
+      "permissions": ["ACCESS_FINE_LOCATION"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      "expo-notifications",
+      "expo-secure-store"
+    ]
+  }
+}

@@ -12,7 +12,8 @@ import staffRoutes from './routes/staff.routes';
 import serviceRoutes from './routes/service.routes';
 import bookingRoutes from './routes/booking.routes';
 import orderRoutes from './routes/order.routes';
-import pgdRoutes from './routes/pgd.routes';
+// PGD routes disabled — not in current scope
+// import pgdRoutes from './routes/pgd.routes';
 import patientRoutes from './routes/patient.routes';
 import auditRoutes from './routes/audit.routes';
 import dashboardRoutes from './routes/dashboard.routes';
@@ -20,6 +21,14 @@ import securityRoutes from './routes/security.routes';
 import uploadRoutes from './routes/upload.routes';
 import webhookRoutes from './routes/webhook.routes';
 import packageRoutes from './routes/package.routes';
+import marketplaceRoutes from './routes/marketplace.routes';
+import payoutRoutes from './routes/payout.routes';
+import earningsRoutes from './routes/earnings.routes';
+import adRoutes from './routes/ad.routes';
+import subscriptionRoutes from './routes/subscription.routes';
+import domainRoutes from './routes/domain.routes';
+import websiteRoutes from './routes/website.routes';
+import consultationRoutes from './routes/consultation.routes';
 import { startRecurringJobs } from './services/jobQueue';
 import { logger } from './services/logger';
 
@@ -76,13 +85,21 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/pgds', pgdRoutes);
+// app.use('/api/pgds', pgdRoutes); // PGD routes disabled
 app.use('/api/patients', patientRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/payouts', payoutRoutes);
+app.use('/api/earnings', earningsRoutes);
+app.use('/api/ads', adRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/domains', domainRoutes);
+app.use('/api/website', websiteRoutes);
+app.use('/api/consultations', consultationRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // ============================================================

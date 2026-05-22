@@ -39,4 +39,28 @@ export class SmsService {
   static async sendAftercare(phone: string, pharmacyName: string, message: string) {
     await this.send(phone, `${pharmacyName}: ${message} Reply if you need to speak to a pharmacist.`);
   }
+
+  static async sendVideoInvite(phone: string, pharmacyName: string, data: { date: string; time: string; joinUrl: string }) {
+    await this.send(phone, `${pharmacyName}: Your video consultation is scheduled for ${data.date} at ${data.time}. Join here: ${data.joinUrl}`);
+  }
+
+  static async sendVideoReminder(phone: string, pharmacyName: string, data: { time: string; joinUrl: string }) {
+    await this.send(phone, `${pharmacyName}: Reminder - Your video consultation starts in 15 minutes at ${data.time}. Join: ${data.joinUrl}`);
+  }
+
+  static async sendIdvRequired(phone: string, pharmacyName: string, verifyUrl: string) {
+    await this.send(phone, `${pharmacyName}: Identity verification is required for your order. Please complete it here: ${verifyUrl}`);
+  }
+
+  static async sendSubscriptionReminder(phone: string, pharmacyName: string, data: { productName: string; deliveryDate: string }) {
+    await this.send(phone, `${pharmacyName}: Your ${data.productName} repeat order is due for delivery on ${data.deliveryDate}. Reply SKIP to skip or PAUSE to pause.`);
+  }
+
+  static async sendRescreenDue(phone: string, pharmacyName: string, data: { productName: string; rescreenUrl: string }) {
+    await this.send(phone, `${pharmacyName}: Your ${data.productName} subscription requires a re-screening questionnaire. Complete it here: ${data.rescreenUrl}`);
+  }
+
+  static async sendColdChainAlert(phone: string, pharmacyName: string, data: { reference: string; message: string }) {
+    await this.send(phone, `${pharmacyName}: Important delivery update for order ${data.reference}: ${data.message}`);
+  }
 }

@@ -8,6 +8,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import {
   LayoutDashboard, Building2, FileText, ClipboardCheck, Sliders,
   Globe, BarChart3, HeadphonesIcon, Shield, CreditCard, LogOut, Users,
+  Banknote, Megaphone,
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,10 @@ const navItems = [
     { href: '/super-admin/tiers', icon: Sliders, label: 'Tiers & Features' },
     { href: '/super-admin/domains', icon: Globe, label: 'Domains & DNS' },
     { href: '/super-admin/monitoring', icon: BarChart3, label: 'Monitoring' },
+  ]},
+  { label: 'Marketplace', items: [
+    { href: '/super-admin/payouts', icon: Banknote, label: 'Payouts' },
+    { href: '/super-admin/ads', icon: Megaphone, label: 'Ads Revenue' },
   ]},
   { label: 'Operations', items: [
     { href: '/super-admin/team', icon: Users, label: 'Platform Team' },

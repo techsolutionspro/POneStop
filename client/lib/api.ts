@@ -156,3 +156,84 @@ export const packageApi = {
   subscribe: (packageId: string) => api.post('/packages/subscribe', { packageId }),
   billingPortal: () => api.post('/packages/billing-portal'),
 };
+
+// Marketplace (public)
+export const marketplaceApi = {
+  search: (params: { postcode: string; radius?: number; category?: string; service?: string }) =>
+    api.get('/marketplace/search', { params }),
+  pharmacy: (slug: string) => api.get(`/marketplace/pharmacy/${slug}`),
+  featured: (postcode?: string) => api.get('/marketplace/featured', { params: postcode ? { postcode } : {} }),
+  categories: () => api.get('/marketplace/categories'),
+};
+
+// Payouts
+export const payoutApi = {
+  request: (data: { amount: number; bankName?: string; accountNumber?: string; sortCode?: string }) =>
+    api.post('/payouts/request', data),
+  list: (params?: any) => api.get('/payouts', { params }),
+  stats: () => api.get('/payouts/stats'),
+  approve: (id: string) => api.put(`/payouts/${id}/approve`),
+  reject: (id: string, notes?: string) => api.put(`/payouts/${id}/reject`, { notes }),
+  markPaid: (id: string, data: { paymentMethod: string; reference?: string }) =>
+    api.put(`/payouts/${id}/mark-paid`, data),
+};
+
+// Earnings
+export const earningsApi = {
+  summary: () => api.get('/earnings'),
+  history: (params?: any) => api.get('/earnings/history', { params }),
+};
+
+// Ads
+export const adApi = {
+  create: (data: any) => api.post('/ads', data),
+  list: (params?: any) => api.get('/ads', { params }),
+  update: (id: string, data: any) => api.put(`/ads/${id}`, data),
+  click: (id: string) => api.post(`/ads/${id}/click`),
+  stats: () => api.get('/ads/stats'),
+};
+
+// Subscriptions (Patient repeat orders)
+export const subscriptionApi = {
+  me: () => api.get('/subscriptions/me'),
+  list: (params?: any) => api.get('/subscriptions', { params }),
+  create: (data: any) => api.post('/subscriptions', data),
+  pause: (id: string) => api.post(`/subscriptions/${id}/pause`),
+  resume: (id: string) => api.post(`/subscriptions/${id}/resume`),
+  skip: (id: string) => api.post(`/subscriptions/${id}/skip`),
+  cancel: (id: string) => api.post(`/subscriptions/${id}/cancel`),
+};
+
+// Domains (White-label)
+export const domainApi = {
+  get: () => api.get('/domains'),
+  addCustom: (domain: string) => api.post('/domains/custom', { domain }),
+  verify: (id: string) => api.post(`/domains/${id}/verify`),
+  remove: (id: string) => api.delete(`/domains/${id}`),
+  getSsl: (id: string) => api.get(`/domains/${id}/ssl`),
+  toggleAutoRenew: (id: string) => api.put(`/domains/${id}/ssl/auto-renew`),
+};
+
+// Website Builder
+export const websiteApi = {
+  get: () => api.get('/website'),
+  save: (blocks: any[], settings?: any) => api.put('/website', { blocks, settings }),
+  publish: () => api.post('/website/publish'),
+  unpublish: () => api.post('/website/unpublish'),
+  getPublic: (slug: string) => api.get(`/website/public/${slug}`),
+};
+
+// Consultations (eConsultation + Video + IDV)
+export const consultationApi = {
+  getQuestionnaire: (serviceId: string) => api.get(`/consultations/questionnaire/${serviceId}`),
+  evaluateQuestionnaire: (serviceId: string, answers: any) =>
+    api.post('/consultations/questionnaire/evaluate', { serviceId, answers }),
+  // Video
+  scheduleVideo: (data: any) => api.post('/consultations/video/schedule', data),
+  joinVideo: (id: string) => api.post(`/consultations/video/${id}/join`),
+  endVideo: (id: string, notes?: string) => api.post(`/consultations/video/${id}/end`, { notes }),
+  listVideoSessions: (params?: any) => api.get('/consultations/video', { params }),
+  // IDV
+  createIdvSession: () => api.post('/consultations/idv/create'),
+  getIdvStatus: () => api.get('/consultations/idv/status'),
+};

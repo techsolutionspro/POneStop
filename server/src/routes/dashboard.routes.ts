@@ -76,7 +76,7 @@ router.get('/platform', authenticate, requireSuperAdmin, async (_req: Request, r
     const [
       totalTenants, activeTenants, totalOrders, todayOrders,
       monthRevenue, avgPrescriberSla, dspVerified, dspPending,
-      publishedPgds, recentTenants,
+      totalCommission, recentTenants,
     ] = await Promise.all([
       prisma.tenant.count(),
       prisma.tenant.count({ where: { status: 'ACTIVE' } }),
@@ -90,7 +90,7 @@ router.get('/platform', authenticate, requireSuperAdmin, async (_req: Request, r
       Promise.resolve(2.1),
       prisma.tenant.count({ where: { dspStatus: 'VERIFIED' } }),
       prisma.tenant.count({ where: { dspStatus: 'PENDING_VERIFICATION' } }),
-      prisma.pgd.count({ where: { status: 'PUBLISHED' } }),
+      prisma.commission.aggregate({ where: { createdAt: { gte: monthAgo } }, _sum: { commissionAmount: true } }),
       prisma.tenant.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -105,7 +105,8 @@ router.get('/platform', authenticate, requireSuperAdmin, async (_req: Request, r
           totalTenants, activeTenants, totalOrders, todayOrders,
           monthRevenue: monthRevenue._sum.totalAmount || 0,
           avgPrescriberSla,
-          dspVerified, dspPending, publishedPgds,
+          dspVerified, dspPending,
+          totalCommission: totalCommission._sum.commissionAmount || 0,
         },
         recentTenants,
       },

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { serviceApi, pgdApi } from '@/lib/api';
+import { serviceApi } from '@/lib/api';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,25 +15,23 @@ export default function ServicesPage() {
   const { user } = useAuthStore();
   const tenantSlug = user?.tenant?.slug;
   const [services, setServices] = useState<any[]>([]);
-  const [pgds, setPgds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ pgdId: '', name: '', description: '', price: '', depositAmount: '', duration: '', capacity: '1', bufferTime: '0', fulfilmentModes: ['IN_BRANCH'] as string[], isDiscreet: false });
+  const [form, setForm] = useState({ name: '', description: '', price: '', depositAmount: '', duration: '', capacity: '1', bufferTime: '0', fulfilmentModes: ['IN_BRANCH'] as string[], isDiscreet: false, category: 'BASIC_CONSULTATION' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { load(); }, []);
   async function load() {
     try {
-      const [sRes, pRes] = await Promise.all([serviceApi.list(), pgdApi.list({ status: 'PUBLISHED' })]);
+      const sRes = await serviceApi.list();
       setServices(sRes.data.data);
-      setPgds(pRes.data.data);
     } catch {} finally { setLoading(false); }
   }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault(); setSaving(true);
     try {
-      await serviceApi.create({ ...form, price: parseFloat(form.price), depositAmount: form.depositAmount ? parseFloat(form.depositAmount) : undefined, duration: form.duration ? parseInt(form.duration) : undefined, capacity: parseInt(form.capacity), bufferTime: parseInt(form.bufferTime) });
+      await serviceApi.create({ ...form, price: parseFloat(form.price), depositAmount: form.depositAmount ? parseFloat(form.depositAmount) : undefined, duration: form.duration ? parseInt(form.duration) : undefined, capacity: parseInt(form.capacity), bufferTime: parseInt(form.bufferTime), category: form.category });
       setShowAdd(false); load();
     } catch {} finally { setSaving(false); }
   }
@@ -86,14 +84,16 @@ export default function ServicesPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white"><h3 className="text-lg font-semibold">Activate Service</h3><button onClick={() => setShowAdd(false)}><X className="w-5 h-5 text-gray-400" /></button></div>
             <form onSubmit={handleAdd} className="p-6 space-y-4">
+              <Input label="Service Name" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">PGD <span className="text-red-500">*</span></label>
-                <select className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm" required value={form.pgdId} onChange={e => { const p = pgds.find((x: any) => x.id === e.target.value); setForm(f => ({ ...f, pgdId: e.target.value, name: p?.title || '' })); }}>
-                  <option value="">Select PGD...</option>
-                  {pgds.map((p: any) => <option key={p.id} value={p.id}>{p.title} ({p.therapyArea}) - {p.version}</option>)}
+                <label className="text-sm font-medium text-gray-700">Category</label>
+                <select className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                  <option value="BASIC_CONSULTATION">Consultation</option>
+                  <option value="OTC">Over the Counter (OTC)</option>
+                  <option value="PHARMACY_MEDICINE">Pharmacy Medicine (P)</option>
+                  <option value="POM_PRESCRIBING">Prescription (POM)</option>
                 </select>
               </div>
-              <Input label="Service Name" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               <div className="flex flex-col gap-1.5"><label className="text-sm font-medium text-gray-700">Description</label><textarea className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm" rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Price (GBP)" type="number" step="0.01" required value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} />
@@ -120,7 +120,7 @@ export default function ServicesPage() {
           <Card key={s.id} className="hover:shadow-md transition-shadow">
             <div className="p-5">
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><Stethoscope className="w-5 h-5" /></div><div><h3 className="font-semibold text-sm">{s.name}</h3><p className="text-xs text-gray-400">{s.pgd?.therapyArea} | {s.pgd?.version}</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><Stethoscope className="w-5 h-5" /></div><div><h3 className="font-semibold text-sm">{s.name}</h3><p className="text-xs text-gray-400">{s.category?.replace(/_/g, ' ')}</p></div></div>
                 <Badge status={s.isActive ? 'ACTIVE' : 'SUSPENDED'} />
               </div>
               {s.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{s.description}</p>}
