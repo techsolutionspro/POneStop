@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, MapPin, Star, Truck, Filter, X, ArrowLeft, Pill, Loader2 } from 'lucide-react';
@@ -17,6 +17,14 @@ const CATEGORY_OPTIONS = [
 const RADIUS_OPTIONS = [5, 10, 15, 25, 50];
 
 export default function BrowsePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-teal-600" /></div>}>
+      <BrowseContent />
+    </Suspense>
+  );
+}
+
+function BrowseContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
